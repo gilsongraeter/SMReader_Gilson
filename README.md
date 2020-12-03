@@ -23,3 +23,17 @@
 * Monitoramento de Transformador
 
 ## Versão 40
+* Ultima versão do Matheus Souza
+
+## Versão 41
+* Não existe - pulou essa versão para saber automaticamente até onde foi a versão do Matheus Souza
+
+## Versão 42
+* Criado submenu de Memória de Massa com os seguintes itens:
+  - Abnt
+  - SM
+  - Intervalo de MM
+  - Reset
+* Criada a tela para seleção do Intervalo de MM e criado comando ABNT 0x73 para envio de Intervalo de MM
+* Criado comando de Reset de MM que na verdade fica dentro do comando resetRegistradores com paramentro 0x02
+* Liberado para mostrar no menu BLE os equipamentos MAX, EXT e UNQ.

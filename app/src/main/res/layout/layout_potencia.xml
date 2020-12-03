@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    tools:showIn="@layout/activity_pagina_fiscal">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="*"
+        android:layout_marginTop="10dp"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp" >
+
+        <View
+            android:layout_height="2dp"
+            android:background="@color/textDark" />
+
+        <TableRow
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/fase_a" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/fase_b" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/fase_c" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/fase_t" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:background="#ff909090" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textDark"
+            android:text="@string/potencia_ativa" />
+
+        <TableRow
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+
+            <TextView
+                android:id="@+id/pa"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:gravity="end"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_potencia_ativa" />
+
+            <TextView
+                android:id="@+id/pb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_potencia_ativa" />
+
+            <TextView
+                android:id="@+id/pc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_potencia_ativa" />
+
+            <TextView
+                android:id="@+id/pt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_potencia_ativa" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:background="#ff909090" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textDark"
+            android:text="@string/potencia_reativa" />
+
+        <TableRow
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+
+            <TextView
+                android:id="@+id/qa"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:gravity="end"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_potencia_reativa" />
+
+            <TextView
+                android:id="@+id/qb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_potencia_reativa" />
+
+            <TextView
+                android:id="@+id/qc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_potencia_reativa" />
+
+            <TextView
+                android:id="@+id/qt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_potencia_reativa" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:background="#ff909090" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textDark"
+            android:text="@string/potencia_aparente" />
+
+        <TableRow
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+
+            <TextView
+                android:id="@+id/sa"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:gravity="end"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_potencia_aparente" />
+
+            <TextView
+                android:id="@+id/sb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_potencia_aparente" />
+
+            <TextView
+                android:id="@+id/sc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_potencia_aparente" />
+
+            <TextView
+                android:id="@+id/st"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_potencia_aparente" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:background="#ff909090" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textDark"
+            android:text="@string/fator_potencia" />
+
+        <TableRow
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+
+            <TextView
+                android:id="@+id/fpa"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:gravity="end"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_fator_potencia" />
+
+            <TextView
+                android:id="@+id/fpb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_fator_potencia" />
+
+            <TextView
+                android:id="@+id/fpc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_fator_potencia" />
+
+            <TextView
+                android:id="@+id/fpt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_fator_potencia" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:background="#ff909090" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textDark"
+            android:text="@string/cosseno_fi" />
+
+        <TableRow
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp">
+
+            <TextView
+                android:id="@+id/cfa"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:gravity="end"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_cosseno_fi" />
+
+            <TextView
+                android:id="@+id/cfb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_cosseno_fi" />
+
+            <TextView
+                android:id="@+id/cfc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_cosseno_fi" />
+
+            <TextView
+                android:id="@+id/cft"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="16sp"
+                android:text="@string/placeholder_cosseno_fi" />
+        </TableRow>
+    </TableLayout>
+</merge>

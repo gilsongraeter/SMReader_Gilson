@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/device_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@drawable/device_border"
+        android:gravity="center_vertical"
+        android:paddingLeft="10dp"
+        android:paddingTop="10dp"
+        android:paddingEnd="0dp"
+        android:paddingBottom="10dp"
+        android:textColor="@color/textDark"
+        android:textSize="20sp"
+        tools:text="SM12 01-99000000" />
+
+    <TextView
+        android:id="@+id/device_rssi"
+        android:layout_width="100dp"
+        android:layout_height="match_parent"
+        android:layout_weight="0"
+        android:background="@drawable/device_border"
+        android:drawableEnd="@drawable/wifi"
+        android:drawableTint="@color/starmeasure_turquoise"
+        android:padding="10dp"
+        android:paddingLeft="0dp"
+        android:textColor="@color/sm_gray"
+        android:textSize="20sp"
+        tools:text="-99 " />
+</LinearLayout>

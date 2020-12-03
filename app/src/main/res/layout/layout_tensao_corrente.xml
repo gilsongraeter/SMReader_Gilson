@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    tools:showIn="@layout/activity_pagina_fiscal">
+
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:stretchColumns="*"
+        android:layout_marginTop="10dp"
+        android:paddingStart="5dp"
+        android:paddingEnd="5dp" >
+
+        <View
+            android:layout_height="2dp"
+            android:background="@color/textDark" />
+
+        <TableRow>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/fase_a" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/fase_b" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/fase_c" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:background="#ff909090" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textDark"
+            android:text="@string/tensao" />
+
+        <TableRow>
+
+            <!--android:background="#cedbeb"-->
+            <TextView
+                android:id="@+id/va"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:gravity="end"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_tensao" />
+
+            <!--android:background="#dbebce"-->
+            <TextView
+                android:id="@+id/vb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_tensao" />
+
+            <!--android:background="#ebcedb"-->
+            <TextView
+                android:id="@+id/vc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_tensao" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:background="#ff909090" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textDark"
+            android:text="@string/tensao_entre_fases" />
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/vab"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:gravity="end"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_tensao" />
+
+            <TextView
+                android:id="@+id/vbc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_tensao" />
+
+            <TextView
+                android:id="@+id/vca"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_tensao" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:background="#ff909090" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textDark"
+            android:text="@string/angulo_tensao" />
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/angulo_va"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:gravity="end"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_angulo" />
+
+            <TextView
+                android:id="@+id/angulo_vb"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_angulo" />
+
+            <TextView
+                android:id="@+id/angulo_vc"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_angulo" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:background="#ff909090" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textDark"
+            android:text="@string/corrente" />
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/ia"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:gravity="end"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_corrente" />
+
+            <TextView
+                android:id="@+id/ib"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_corrente" />
+
+            <TextView
+                android:id="@+id/ic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_corrente" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:background="#ff909090" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textDark"
+            android:text="@string/defasagem_corrente" />
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/defasagem_ia"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:gravity="end"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_angulo" />
+
+            <TextView
+                android:id="@+id/defasagem_ib"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_angulo" />
+
+            <TextView
+                android:id="@+id/defasagem_ic"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_angulo" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:background="#ff909090" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textDark"
+            android:text="Distorção Harmônica de Tensão" />
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/dht_a"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:gravity="end"
+                android:textColor="@color/textDark"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/dht_b"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/dht_c"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:background="#ff909090" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textDark"
+            android:text="Distorção Harmônica de Corrente" />
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/dhc_a"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:gravity="end"
+                android:textColor="@color/textDark"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/dhc_b"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp" />
+
+            <TextView
+                android:id="@+id/dhc_c"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:textColor="@color/textDark"
+                android:textSize="18sp" />
+        </TableRow>
+
+        <View
+            android:layout_height="1dp"
+            android:background="#ff909090" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textDark"
+            android:text="@string/frequencia" />
+
+        <TableRow>
+
+            <TextView
+                android:id="@+id/frequencia"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="2dp"
+                android:paddingEnd="2dp"
+                android:gravity="end"
+                android:textColor="@color/textDark"
+                android:textSize="18sp"
+                android:text="@string/placeholder_frequencia" />
+        </TableRow>
+    </TableLayout>
+</merge>

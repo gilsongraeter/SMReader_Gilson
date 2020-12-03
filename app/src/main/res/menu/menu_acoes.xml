@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_leitura_registradores"
+        android:icon="@android:drawable/btn_star_big_on"
+        android:title="@string/text_leitura_registradores" />
+
+    <item
+        android:id="@+id/menu_pagina_fiscal"
+        android:icon="@android:drawable/checkbox_on_background"
+        android:title="@string/text_pagina_fiscal" />
+
+    <item
+        android:id="@+id/menu_memoria_massa"
+        android:title="@string/text_memoria_massa">
+        <menu>
+            <item
+                android:id="@+id/menu_memoria_massa_abnt"
+                android:title="ABNT" />
+            <item
+                android:id="@+id/menu_memoria_massa_sm"
+                android:title="SM" />
+            <item
+                android:id="@+id/menu_memoria_massa_intervalo"
+                android:title="Alteração de Intervalo" />
+            <item
+                android:id="@+id/menu_memoria_massa_reset"
+                android:title="Reset" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/menu_nome_unidade"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="@string/text_nome_unidade" />
+    <item
+        android:id="@+id/menu_data_hora"
+        android:layout_height="wrap_content"
+        android:icon="@android:drawable/ic_lock_idle_alarm"
+        android:title="@string/text_data_hora" />
+    <item
+        android:id="@+id/menu_corte_religa"
+        android:icon="@android:drawable/ic_lock_power_off"
+        android:title="@string/text_corte_religa" />
+    <item
+        android:id="@+id/menu_reset_registradores"
+        android:icon="@drawable/ic_restore_black_24dp"
+        android:title="Reset Registradores" />
+
+    <item
+        android:id="@+id/menu_qee"
+        android:icon="@drawable/ic_restore_black_24dp"
+        android:title="QEE">
+        <menu>
+            <item
+                android:id="@+id/menu_qee_parametrizacao"
+                android:title="QEE Parametrização" />
+            <item
+                android:id="@+id/menu_qee_reset"
+                android:title="QEE Reset" />
+            <item
+                android:id="@+id/menu_qee_leitura"
+                android:title="QEE Leitura" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/menu_carga_de_programa"
+        android:title="Carga de programa"/>
+
+    <item
+        android:id="@+id/menu_monitoramento"
+        android:visible="false"
+        android:title="Monitoramento"/>
+
+    <item
+        android:id="@+id/menu_modo_test"
+        android:visible="false"
+        android:title="Modo Teste"/>
+
+</menu>

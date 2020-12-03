@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RadioGroup
+        android:id="@+id/rg_intervaloMM"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true">
+
+        <RadioButton
+            android:id="@+id/rd1minuto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1 minuto"
+            android:textColor="@color/white"
+            android:checked="true"/>
+
+        <RadioButton
+            android:id="@+id/rd5minutos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="5 minutos"
+            android:textColor="@color/white"/>
+
+        <RadioButton
+            android:id="@+id/rd15minutos"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="15 minutos"
+            android:textColor="@color/white"/>
+
+    </RadioGroup>
+
+    <TextView
+        android:id="@+id/tv_intervaloMM"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/rg_intervaloMM"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="51dp"
+        android:text="Selecione o novo intervalo da Memória de Massa."
+        android:textSize="16sp"/>
+
+    <Button
+        android:id="@+id/btn_intervaloMM"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/rg_intervaloMM"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="-96dp"
+        android:text="Enviar" />
+
+</RelativeLayout>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="toolbarHeight">70dp</dimen>
+
+    <dimen name="container_radius">10dp</dimen>
+    <dimen name="container_stroke">2dp</dimen>
+</resources>

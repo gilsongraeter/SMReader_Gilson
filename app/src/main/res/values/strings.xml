@@ -1,0 +1,97 @@
+<resources>
+    <string name="app_name">SMReader</string>
+    <string name="rescan_devices">Rescan devices</string>
+    <string name="star_measure_logo">Star Measure logo</string>
+    <string name="unidade_consumidora_display">UC: %s</string>
+    <string name="numero_medidor_display">Medidor: %s</string>
+    <string name="angulo_tensao">Ângulo Tensão</string>
+    <string name="tensao_nominal">Tensão Nominal</string>
+    <string name="corrente">Corrente</string>
+    <string name="defasagem_corrente">Defasagem VI</string>
+    <string name="fase_a">Fase A</string>
+    <string name="tipo_ligacao">Tipo de Ligação</string>
+    <string name="fase_b">Fase B</string>
+    <string name="fase_c">Fase C</string>
+    <string name="formata_angulo">%.2fº</string>
+    <string name="formata_corrente">%sA</string>
+    <string name="formata_cosseno_fi">%.2f</string>
+    <string name="formata_fator_potencia">%.1f%%</string>
+    <string name="formata_dht">%.2f%%</string>
+    <string name="formata_frequencia">%.1f Hz</string>
+    <string name="formata_potencia_aparente">%sVA</string>
+    <string name="formata_potencia_ativa">%sW</string>
+    <string name="formata_potencia_reativa">%svar</string>
+    <string name="formata_tensao">%sV</string>
+    <string name="frequencia">Frequência</string>
+    <string name="temperatura">Temperatura: %.1fº</string>
+    <string name="horario_local">Horário Local: %s</string>
+    <string name="horario_medidor">Horário do Medidor: %s</string>
+    <string name="placeholder_angulo">- º</string>
+    <string name="placeholder_corrente">- A</string>
+    <string name="placeholder_frequencia">- Hz</string>
+    <string name="placeholder_horario_local">Horário Local: --/--/---- --:--:--</string>
+    <string name="placeholder_horario_medidor">Horário do Medidor: --/--/---- --:--:--</string>
+    <string name="placeholder_tensao">- V</string>
+    <string name="tensao">Tensão</string>
+    <string name="tensao_entre_fases">Tensão AB/BC/CA</string>
+    <string name="fase_t">Trifásico</string>
+    <string name="potencia_ativa">Potência Ativa</string>
+    <string name="potencia_reativa">Potência Reativa</string>
+    <string name="potencia_aparente">Potência Aparente Vetorial</string>
+    <string name="fator_potencia">Fator de Potência</string>
+    <string name="cosseno_fi">Cosseno Fi</string>
+    <string name="placeholder_potencia_ativa">- kW</string>
+    <string name="placeholder_potencia_reativa">- kvar</string>
+    <string name="placeholder_potencia_aparente">- kVA</string>
+    <string name="placeholder_fator_potencia">-</string>
+    <string name="placeholder_cosseno_fi">-</string>
+    <string name="titulo_pagina_fiscal">Página Fiscal</string>
+    <string name="tempo_pacote">Tempo: 00ms</string>
+    <string name="text_leitura_registradores">Registradores Atuais</string>
+    <string name="text_pagina_fiscal">Página Fiscal</string>
+    <string name="text_corte_religa">Corte/Religa</string>
+    <string name="text_religa">Religa</string>
+    <string name="text_corte">Corte</string>
+    <string name="text_senha_expirada">Senha expirada.</string>
+    <string name="text_medidor_protecao">Medidor em período de proteção contra tentativa de acesso não autorizado.</string>
+    <string name="text_senha_invalida">Senha inválida.</string>
+    <string name="text_senha_expira">Senha atual expira em menos de 7 dias.</string>
+    <string name="text_ocorrencia_medidor">Ocorrência no medidor. Solicitando limpeza de ocorrências.</string>
+    <string name="text_timeout_leitura">Timeout na leitura dos medidores.</string>
+    <string name="text_data_hora">Sincronizar data/hora</string>
+    <string name="text_nome_unidade">Alterar Ponto</string>
+    <string name="text_memoria_massa">Memória de Massa</string>
+    <string name="numero_dias_text">Número de Dias</string>
+    <string name="selecione_canal_text" >Selecione o Canal</string>
+    <string name="text_temperatura">Temperatura:</string>
+    <string name="text_versao">Versão: %1$s</string>
+
+    <string name="text_close">Fechar</string>
+    <string name="text_file_manager_leituras">Leituras</string>
+    <string name="text_file_manager_cargas">Cargas</string>
+    <string name="text_equipment">Medidor: </string>
+    <string name="text_point">Ponto: </string>
+    <string name="text_date">Data: </string>
+    <string name="text_time">Hora: </string>
+    <string name="text_size">Tamanho: </string>
+    <string name="text_open_file">Abrir arquivo</string>
+    <string name="text_icon">Icon</string>
+    <string name="file_manager_button_select_all">Todos</string>
+    <string name="file_manager_button_share">Compartilhar</string>
+    <string name="file_manager_button_delete">Excluir</string>
+    <string name="subject_sm_reader_reads">Leituras do SMReader...</string>
+
+    <string-array name="potencia_nominal_monitoramento_menor_que_cem">
+        <item>25 kVA</item>
+        <item>37,5 kVA</item>
+        <item>50 kVA</item>
+        <item>75 kVA</item>
+        <item>100 kVA</item>
+    </string-array>
+
+    <string-array name="potencia_nominal_monitoramento_maior_que_cem">
+        <item>112,5 kVA</item>
+        <item>150 kVA</item>
+        <item>225 kVA</item>
+    </string-array>
+</resources>

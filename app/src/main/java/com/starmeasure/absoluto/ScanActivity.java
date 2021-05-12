@@ -624,7 +624,7 @@ public class ScanActivity extends AppCompatActivity {
                 }
 
                 private boolean isStarMeasureDevice(@Nullable String deviceName) {
-                    return deviceName != null && (deviceName.startsWith("SM") || deviceName.startsWith("EV") || deviceName.startsWith("MAX") || deviceName.startsWith("ET"));
+                    return deviceName != null && (deviceName.startsWith("SM")  || deviceName.startsWith("ET") || deviceName.startsWith("EV") || deviceName.startsWith("MAX") || deviceName.startsWith("EXT") || deviceName.startsWith("UNQ"));
                 }
             });
             super.onScanResult(callbackType, result);

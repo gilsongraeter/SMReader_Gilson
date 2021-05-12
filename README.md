@@ -37,3 +37,7 @@
 * Criada a tela para seleção do Intervalo de MM e criado comando ABNT 0x73 para envio de Intervalo de MM
 * Criado comando de Reset de MM que na verdade fica dentro do comando resetRegistradores com paramentro 0x02
 * Liberado para mostrar no menu BLE os equipamentos MAX, EXT e UNQ.
+
+
+## Versão 43
+* Mostrar Módulo, Estado de conexão e Sinal da placa de comunicação igual ao que era mostrado no ET.

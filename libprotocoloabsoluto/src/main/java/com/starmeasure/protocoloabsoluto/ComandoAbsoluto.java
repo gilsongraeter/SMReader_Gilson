@@ -33,6 +33,50 @@ public class ComandoAbsoluto {
         }
     }
 
+    public static class EB17_2 {
+        private TipoMedidor tipo = TipoMedidor.Hospedeiro;
+        private String ns_medidor = "";
+
+        public EB17_2 comMedidorNumero(String numeroMedidor) {
+            this.tipo = ProtocoloAbsoluto.TipoMedidorPeloNumeroMedidor(numeroMedidor);
+            this.ns_medidor = numeroMedidor;
+            return this;
+        }
+
+        public byte[] build(byte tipo_comando) {
+            byte[] cabecalho = GeraNumeroMedidor(tipo, ns_medidor);
+            byte[] corpo = GeraCorpoPerguntaEstendida(ProtocoloAbsoluto.EB17);
+            corpo[0] = ProtocoloAbsoluto.ComandoEB;
+            corpo[5] = tipo_comando;
+            return ComandoAbsoluto.GeraMensagem(cabecalho, corpo);
+        }
+    }
+
+    public static class AB52 {
+        private TipoMedidor tipo = TipoMedidor.Hospedeiro;
+        private String ns_medidor = "";
+
+        public AB52 comMedidorNumero(String numeroMedidor) {
+            this.tipo = ProtocoloAbsoluto.TipoMedidorPeloNumeroMedidor(numeroMedidor);
+            this.ns_medidor = numeroMedidor;
+            return this;
+        }
+
+        public byte[] build(byte pacote, byte TipoLeitura, int Intervalo) {
+            byte[] cabecalho = GeraNumeroMedidor(tipo, ns_medidor);
+            byte[] corpo = GeraCorpoPerguntaEstendida(ProtocoloAbsoluto.AbntLeituraMemoriaMassa);
+            corpo[0] = ProtocoloAbsoluto.ComandoAB;
+            corpo[5] = pacote;
+            corpo[6] = 0x00;
+            corpo[7] = TipoLeitura;
+            corpo[8] = (byte)(Intervalo & 0x0F);
+            corpo[9] = (byte)((Intervalo >> 8) & 0x0F);
+            corpo[10] = (byte)((Intervalo >> 16) & 0x0F);
+            corpo[11] = (byte)((Intervalo >> 24) & 0x0F);
+            return ComandoAbsoluto.GeraMensagem(cabecalho, corpo);
+        }
+    }
+
     /**
      * Alteração do protocolo da interface
      */
@@ -165,7 +209,7 @@ public class ComandoAbsoluto {
             byte[] cabecalho = GeraNumeroMedidor(TipoMedidor.Hospedeiro, "");
             byte[] corpo = GeraCorpoPerguntaEstendida(ProtocoloAbsoluto.ConfiguracoesMedidorHospedeiro);
             if (!isAbsoluto) {
-                corpo[0] = ProtocoloAbsoluto.ComandoEB;
+                    corpo[0] = ProtocoloAbsoluto.ComandoEB;
             }
             return ComandoAbsoluto.GeraMensagem(cabecalho, corpo);
         }
@@ -383,6 +427,345 @@ public class ComandoAbsoluto {
             corpo[8] = (byte) ProtocoloAbsoluto.byteToBCD((byte) dias);
 
             return ComandoAbsoluto.GeraMensagem(cabecalho, corpo);
+        }
+    }
+
+    //ToDo making EB17
+    public static class EB17 {
+        private TipoMedidor tipo = TipoMedidor.Hospedeiro;
+        private String ns_medidor = "";
+        private boolean isLeitura = true;
+        private byte ValeAlteracoes = 0;
+        private boolean isAlteracaoTelefones = false;
+        private String Telefone1 = "00000000000";
+        private String Telefone2 = "00000000000";
+        private String Telefone3 = "00000000000";
+        private String Telefone4 = "00000000000";
+        private String TelefonesDeteccaoFalhas = Telefone1 + Telefone2 + Telefone3 + Telefone4;
+        private byte QtdTelefones = 0;
+        private boolean isAlteracaoEventos = false;
+        private byte Eventos = 0;
+        private boolean isAlteracaoCiclos = false;
+        private byte Ciclos = 0;
+        private boolean isAlteracaoRepeticoes = false;
+        private byte RepeticoesEtapa1 = 0;
+        private boolean isAlteracaoIntervalo1 = false;
+        private short Intervalo1 = 0;
+        private boolean isAlteracaoIntervalo2 = false;
+        private short Intervalo2 = 0;
+        private boolean isAlteracaoTelefoneKeepAlive = false;
+        private String TelefoneKeepAlive = "00000000000";
+        private boolean isAlteracaoFrequenciaKeepAlive = false;
+        private byte FrequenciaKeepAlive = 0;
+        private String Digito1Aux = "";
+        private String Digito2Aux = "";
+
+        private byte ZeraFlags = 0;
+        private boolean zeraFlagsAlteracaoTelefones = false;
+        private boolean zeraFlagsAlteracaoEventos = false;
+        private boolean zeraFlagsAlteracaoCiclos = false;
+        private boolean zeraFlagsAlteracaoRepeticoesEtapa1 = false;
+        private boolean zeraFlagsAlteracaoIntervalo1 = false;
+        private boolean zeraFlagsAlteracaoIntervalo2 = false;
+        private boolean zeraFlagsAlteracaoTelefoneKeepAlive = false;
+        private boolean zeraFlagsAlteracaoFrequenciaKeepAlive = false;
+
+        private byte Validade = 0;
+
+        public EB17 comNumerMedidor(String numeroMedidor) {
+            this.tipo = ProtocoloAbsoluto.TipoMedidorPeloNumeroMedidor(numeroMedidor);
+            this.ns_medidor = numeroMedidor;
+            return this;
+        }
+
+        public byte[] build() {
+            byte[] cabecalho = GeraNumeroMedidor(tipo, ns_medidor);
+            byte[] corpo = GeraCorpoPerguntaEstendida(ProtocoloAbsoluto.EB17);
+            corpo[0] = ProtocoloAbsoluto.ComandoEB;
+            if (isLeitura) {
+                corpo[5] = 0x00;
+            } else {
+                corpo[5] = 0x01;
+            }
+
+            if(isAlteracaoTelefones) {
+                ValeAlteracoes |= 0x01;
+            }
+
+            if(isAlteracaoEventos) {
+                ValeAlteracoes |= 0x02;
+            }
+
+            if(isAlteracaoCiclos) {
+                ValeAlteracoes |= 0x04;
+            }
+
+            if(isAlteracaoRepeticoes) {
+                ValeAlteracoes |= 0x08;
+            }
+
+            if(isAlteracaoIntervalo1) {
+                ValeAlteracoes |= 0x10;
+            }
+
+            if(isAlteracaoIntervalo2) {
+                ValeAlteracoes |= 0x20;
+            }
+
+            if(isAlteracaoTelefoneKeepAlive) {
+                ValeAlteracoes |= 0x40;
+            }
+
+            if(isAlteracaoFrequenciaKeepAlive) {
+                ValeAlteracoes |= 0x80;
+            }
+
+            corpo[6] = ValeAlteracoes;
+            corpo[7] = 0x00; // NULL
+            corpo[8] = 0x00; // Zera Flags - Leitura ou escrita ????
+            corpo[9] = 0x00; // NULL
+
+            corpo[10] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(0, 1)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(1, 2))));
+            corpo[11] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(2, 3)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(3, 4))));
+            corpo[12] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(4, 5)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(5, 6))));
+            corpo[13] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(6, 7)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(7, 8))));
+            corpo[14] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(8, 9)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(9, 10))));
+            corpo[15] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(10, 11)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(11, 12))));
+            corpo[16] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(12, 13)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(13, 14))));
+            corpo[17] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(14, 15)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(15, 16))));
+            corpo[18] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(16, 17)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(17, 18))));
+            corpo[19] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(18, 19)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(19, 20))));
+            corpo[20] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(20, 21)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(21, 22))));
+            corpo[21] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(22, 23)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(23, 24))));
+            corpo[22] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(24, 25)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(25, 26))));
+            corpo[23] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(26, 27)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(27, 28))));
+            corpo[24] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(28, 29)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(29, 30))));
+            corpo[25] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(30, 31)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(31, 32))));
+            corpo[26] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(32, 33)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(33, 34))));
+            corpo[27] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(34, 35)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(35, 36))));
+            corpo[28] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(36, 37)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(37, 38))));
+            corpo[29] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(38, 39)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(39, 40))));
+            corpo[30] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(40, 41)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(41, 42))));
+            corpo[31] = ((byte)((Byte.parseByte(TelefonesDeteccaoFalhas.substring(42, 43)) * 16) + Byte.parseByte(TelefonesDeteccaoFalhas.substring(43, 44))));
+
+            corpo[32] = QtdTelefones;
+            corpo[33] = Eventos;
+            corpo[34] = Ciclos;
+            corpo[35] = RepeticoesEtapa1;
+            corpo[36] = (byte)(Intervalo1 & 0xFF);
+            corpo[37] = (byte)(Intervalo1 >> 8);
+            corpo[38] = (byte)(Intervalo2 & 0xFF);
+            corpo[39] = (byte)(Intervalo2 >> 8);
+
+            corpo[40] = ((byte)((Byte.parseByte(TelefoneKeepAlive.substring(0, 1)) * 16) + Byte.parseByte(TelefoneKeepAlive.substring(1, 2))));
+            corpo[41] = ((byte)((Byte.parseByte(TelefoneKeepAlive.substring(2, 3)) * 16) + Byte.parseByte(TelefoneKeepAlive.substring(3, 4))));
+            corpo[42] = ((byte)((Byte.parseByte(TelefoneKeepAlive.substring(4, 5)) * 16) + Byte.parseByte(TelefoneKeepAlive.substring(5, 6))));
+            corpo[43] = ((byte)((Byte.parseByte(TelefoneKeepAlive.substring(6, 7)) * 16) + Byte.parseByte(TelefoneKeepAlive.substring(7, 8))));
+            corpo[44] = ((byte)((Byte.parseByte(TelefoneKeepAlive.substring(8, 9)) * 16) + Byte.parseByte(TelefoneKeepAlive.substring(9, 10))));
+            corpo[45] = ((byte)((Byte.parseByte(TelefoneKeepAlive.substring(10, 11)) * 16) + Byte.parseByte("0")));
+
+            corpo[46] = Validade;
+            corpo[47] = FrequenciaKeepAlive;
+
+            return GeraMensagem(cabecalho, corpo);
+        }
+
+        public void setAlteracaoTelefones(boolean bAlteracaoTelefones) {
+            isAlteracaoTelefones = bAlteracaoTelefones;
+        }
+
+        public void setAlteracaoEventos(boolean bEventos) {
+            isAlteracaoEventos = bEventos;
+        }
+
+        public void setAlteracaoCiclos(boolean bCiclos) {
+            isAlteracaoCiclos = bCiclos;
+        }
+
+        public void setAlteracaoRepeticoes(boolean bRepeticoes) {
+            isAlteracaoRepeticoes = bRepeticoes;
+        }
+
+        public void setAlteracaoIntervalo1(boolean bIntervalo) {
+            isAlteracaoIntervalo1 = bIntervalo;
+        }
+
+        public void setAlteracaoIntervalo2(boolean bIntervalo) {
+            isAlteracaoIntervalo2 = bIntervalo;
+        }
+
+        public void setAlteracaoTelefoneKeepAlive(boolean bTelefoneKeepAlive) {
+            isAlteracaoTelefoneKeepAlive = bTelefoneKeepAlive;
+        }
+
+        public void setAlteracaoFrequenciaKeepAlive(boolean bFrequencia) {
+            isAlteracaoFrequenciaKeepAlive = bFrequencia;
+        }
+
+        public boolean isLeitura() {
+            return isLeitura;
+        }
+
+        public void setLeitura(boolean leitura) {
+            isLeitura = leitura;
+        }
+
+        public byte getValeAlteracoes() {
+            return ValeAlteracoes;
+        }
+
+        public void setValeAlteracoes(byte Alteracoes) {
+            this.ValeAlteracoes = Alteracoes;
+        }
+
+        public byte getQtdTelefones() {
+            return QtdTelefones;
+        }
+
+        public void setQtdTelefones(byte QtdTelefones) {
+            this.QtdTelefones = QtdTelefones;
+        }
+
+        public byte getEventos() {
+            return Eventos;
+        }
+
+        public void setEventos(byte Eventos) {
+            this.Eventos = Eventos;
+        }
+
+        public byte getCiclos() {
+            return Ciclos;
+        }
+
+        public void setCiclos(byte Ciclos) {
+            this.Ciclos = Ciclos;
+        }
+
+        public byte getRepeticoesEtapa1() {
+            return RepeticoesEtapa1;
+        }
+
+        public void setRepeticoesEtapa1(byte Repeticoes) {
+            this.RepeticoesEtapa1 = Repeticoes;
+        }
+
+        public short getIntervalo1() {
+            return Intervalo1;
+        }
+
+        public void setIntervalo1(byte Intervalo) {
+            this.Intervalo1 = Intervalo;
+        }
+
+        public short getIntervalo2() {
+            return Intervalo2;
+        }
+
+        public void setIntervalo2(byte Intervalo) {
+            this.Intervalo2 = Intervalo;
+        }
+
+        public String getTelefonesDeteccaoFalhas() {
+            return TelefonesDeteccaoFalhas;
+        }
+
+        public void setTelefonesDeteccaoFalhas(String Telefones) {
+            this.TelefonesDeteccaoFalhas = Telefones;
+        }
+
+        public String getTelefone(byte numero)
+        {
+            String TelefoneAux = "";
+
+            switch(numero)
+            {
+                case 1:
+                    TelefoneAux = this.TelefonesDeteccaoFalhas.substring(0, 10);
+                    break;
+                case 2:
+                    TelefoneAux = this.TelefonesDeteccaoFalhas.substring(11, 21);
+                    break;
+                case 3:
+                    TelefoneAux = this.TelefonesDeteccaoFalhas.substring(22, 32);
+                    break;
+                case 4:
+                    TelefoneAux = this.TelefonesDeteccaoFalhas.substring(33, 43);
+                    break;
+            }
+
+            return TelefoneAux;
+        }
+
+        public void setTelefone(byte numero, String Telefone) {
+            switch(numero)
+            {
+                case 1:
+                    this.Telefone1 = Telefone;
+                    break;
+                case 2:
+                    this.Telefone2 = Telefone;
+                    break;
+                case 3:
+                    this.Telefone3 = Telefone;
+                    break;
+                case 4:
+                    this.Telefone4 = Telefone;
+                    break;
+            }
+        }
+
+        public String getTelefoneKeepAlive() {
+            return TelefoneKeepAlive;
+        }
+
+        public void setTelefoneKeepAlive(String TelefoneKeepAlive) {
+            this.TelefoneKeepAlive = TelefoneKeepAlive;
+        }
+
+        public byte getValidade() {
+            return Validade;
+        }
+
+        public void setValidade(byte Validade) {
+            this.Validade = Validade;
+        }
+
+        public byte getFrequenciaKeepAlive() {
+            return FrequenciaKeepAlive;
+        }
+
+        public void setFrequenciaKeepAlive(byte Frequencia) {
+            this.FrequenciaKeepAlive = Frequencia;
+        }
+
+        @Override
+        public String toString() {
+            return "EB17 {" +
+                    "\nTipo Medidor: " + tipo +
+                    "\nNº Medidor: " + ns_medidor +
+                    "\nE Leitura: " + isLeitura +
+                    "\nVale Alteracoes: " + ValeAlteracoes +
+                    "\nTem Alteracao Telefones: " + isAlteracaoTelefones +
+                    "\nTem Alteracao Eventos: " + isAlteracaoEventos +
+                    "\nTem Alteracao Ciclos: " + isAlteracaoCiclos +
+                    "\nTem Alteracao Repetições: " + isAlteracaoRepeticoes +
+                    "\nTem Alteracao Intervalo1: " + isAlteracaoIntervalo1 +
+                    "\nTem Alteracao Intervalo2: " + isAlteracaoIntervalo2 +
+                    "\nTem Alteracao Telefone Keep Alive: " + isAlteracaoTelefoneKeepAlive +
+                    "\nTem Alteracao Frequencia Keep Alive: " + isAlteracaoFrequenciaKeepAlive +
+                    "\nQtd Telefones: " + QtdTelefones +
+                    "\nEventos: " + Eventos +
+                    "\nCiclos: " + Ciclos +
+                    "\nQtd Telefones: " + QtdTelefones +
+                    "\nRepetições Etapa 1: " + RepeticoesEtapa1 +
+                    "\nIntervalo1: " + Intervalo1 +
+                    "\nIntervalo2: " + Intervalo2 +
+                    "\nTelefones: " + TelefonesDeteccaoFalhas +
+                    "\nTelefone Keep Alive: " + TelefoneKeepAlive +
+                    "\nFrequencia Keep Alive: " + FrequenciaKeepAlive +
+                    "\nValidade Keep Alive: " + Validade +
+                    "\n}";
         }
     }
 

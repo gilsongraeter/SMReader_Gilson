@@ -182,6 +182,11 @@ public class RespostaAbsoluto {
                 && mData[5] == ProtocoloAbsoluto.MemoriaMassaQEE;
     }
 
+    public boolean isRespostaMemoriaMassaSM() {
+        return mData[0] == ProtocoloAbsoluto.ComandoAB
+                && mData[5] == ProtocoloAbsoluto.AbntLeituraMemoriaMassa;
+    }
+
     public boolean isRespostaMemoriaMassa() {
         return mData[0] == ProtocoloAbsoluto.AbntLeituraMemoriaMassa;
     }
@@ -285,6 +290,64 @@ public class RespostaAbsoluto {
 
     }
 
+    public LeituraEB17 interpretaEB17() {
+        LeituraEB17 leitura = new LeituraEB17();
+
+        leitura.isLeitura = mData[6] == 0;
+
+        leitura.ValeAlteracao = mData[7];
+
+        leitura.TelefonesDeteccaoFalhas = String.format("%02X", mData[9]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[10]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[11]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[12]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[13]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[14]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[15]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[16]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[17]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[18]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[19]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[20]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[21]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[22]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[23]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[24]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[25]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[26]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[27]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[28]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[29]);
+        leitura.TelefonesDeteccaoFalhas += String.format("%02X", mData[30]);
+
+        leitura.Telefone1 = leitura.TelefonesDeteccaoFalhas.substring(0,11);
+        leitura.Telefone2 = leitura.TelefonesDeteccaoFalhas.substring(11,22);
+        leitura.Telefone3 = leitura.TelefonesDeteccaoFalhas.substring(22, 33);
+        leitura.Telefone4 = leitura.TelefonesDeteccaoFalhas.substring(33,44);
+
+        leitura.QtdTelefones = mData[31];
+        leitura.Eventos = mData[32];
+        leitura.Ciclos = mData[33];
+        leitura.RepeticoesEtapa1 = mData[34];
+        leitura.Intervalo1 = (short)(mData[36] << 8);
+        leitura.Intervalo1 |= (short)(mData[35]);
+        leitura.Intervalo2 = (short)(mData[38] << 8);
+        leitura.Intervalo2 |= (short)(mData[37]);
+
+        leitura.TelefoneKeepAlive = String.format("%02X", mData[39]);
+        leitura.TelefoneKeepAlive += String.format("%02X", mData[40]);
+        leitura.TelefoneKeepAlive += String.format("%02X", mData[41]);
+        leitura.TelefoneKeepAlive += String.format("%02X", mData[42]);
+        leitura.TelefoneKeepAlive += String.format("%02X", mData[43]);
+        String TelAux = String.format("%02X", mData[44]);
+        leitura.TelefoneKeepAlive += TelAux.substring(0,1);
+
+        leitura.Validade = mData[45];
+        leitura.FrequenciaKeepAlive = mData[46];
+
+        return leitura;
+    }
+
     public LeituraEB90 interpretaEB90() {
         LeituraEB90 leitura = new LeituraEB90();
 
@@ -376,6 +439,56 @@ public class RespostaAbsoluto {
         return leituraDados;
     }
 
+    public LeituraCabecalhoMMSM interpretaRespostaAB52Cabecalho() {
+        LeituraCabecalhoMMSM leituraDados = new LeituraCabecalhoMMSM();
+        leituraDados.pacoteAtual = 1;
+
+
+        leituraDados.textdataInicio = String.format("%02X/%02X/20%02X %02X:%02X:%02X",
+                mData[13], mData[14], mData[15], mData[10], mData[11], mData[12]);
+        leituraDados.textdataFim = String.format("%02X/%02X/20%02X %02X:%02X:%02X",
+                mData[19], mData[20], mData[21], mData[16], mData[17], mData[18]);
+
+        leituraDados.dataInicio = Calendar.getInstance();
+        leituraDados.dataInicio.set(ProtocoloAbsoluto.BCDToByte(mData[15]) + 2000, ProtocoloAbsoluto.BCDToByte(mData[14]) - 1, ProtocoloAbsoluto.BCDToByte(mData[13]),
+                ProtocoloAbsoluto.BCDToByte(mData[10]), ProtocoloAbsoluto.BCDToByte(mData[11]), ProtocoloAbsoluto.BCDToByte(mData[12]));
+
+        leituraDados.dataFim = Calendar.getInstance();
+        leituraDados.dataFim.set(ProtocoloAbsoluto.BCDToByte(mData[21]) + 2000, ProtocoloAbsoluto.BCDToByte(mData[20]) - 1, ProtocoloAbsoluto.BCDToByte(mData[19]),
+                ProtocoloAbsoluto.BCDToByte(mData[16]), ProtocoloAbsoluto.BCDToByte(mData[17]), ProtocoloAbsoluto.BCDToByte(mData[18]));
+
+        leituraDados.intevaloQEE = ByteArrayToLong(mData, 22);
+        leituraDados.numeroRegistros = ByteArrayToLong(mData, 24);
+        leituraDados.numeroRegistrosValidos = ByteArrayToLong(mData, 26);
+        leituraDados.grandezas = mData[28];
+        leituraDados.DRP = ByteArrayToFloat(mData, 29);
+        leituraDados.DRC = ByteArrayToFloat(mData, 33);
+        leituraDados.DTT95 = ByteArrayToFloat(mData, 37);
+        leituraDados.FD95 = ByteArrayToFloat(mData, 41);
+        leituraDados.tensaoReferencia = ByteArrayToFloat(mData, 45);
+        leituraDados.constanteMultiplicacaoFrequencia = ByteArrayToFloat(mData, 49);
+        leituraDados.constanteMultiplicacaoTemperatura = ByteArrayToFloat(mData, 53);
+        leituraDados.constanteMultiplicacaoTensao = ByteArrayToFloat(mData, 57);
+        leituraDados.constanteMultiplicacaoDesequilibrio = ByteArrayToFloat(mData, 61);
+        leituraDados.constanteMultiplicacaoHarmonicas = ByteArrayToFloat(mData, 65);
+        leituraDados.constanteMultiplicacaoFatorPotencia = ByteArrayToFloat(mData, 69);
+        leituraDados.percentualTensaoPrecariaSuperior = ByteArrayToFloat(mData, 73);
+        leituraDados.percentualTensaoPrecariaInferior = ByteArrayToFloat(mData, 77);
+        leituraDados.percentualTensaoCriticaSuperior = ByteArrayToFloat(mData, 81);
+        leituraDados.percentualTensaoCriticaInferior = ByteArrayToFloat(mData, 85);
+        leituraDados.tipoLigacao = mData[89];
+
+        leituraDados.numeroBytes = (int) leituraDados.numeroRegistros * 31;
+        leituraDados.posicaoAtual = 0;
+        float valor = (float) leituraDados.numeroBytes / 247;
+        leituraDados.numeroPacotes = (long) valor;
+        if ((valor % 1) > 0) {
+            leituraDados.numeroPacotes++;
+        }
+
+        return leituraDados;
+    }
+
     public boolean interpretaRespostaEB11() {
 
         if ((mData[7] & 0x10) != 0) {
@@ -393,7 +506,27 @@ public class RespostaAbsoluto {
 
     }
 
+    public boolean interpretaRespostaAB52() {
+
+        if ((mData[7] & 0x10) != 0) {
+            return true;
+        } else {
+            return false;
+        }
+        /*
+        if (mData[7] != 0) {
+            return true;
+        }
+        else {
+            return false;
+        }*/
+    }
+
     public LeituraQEE preparaQEE() {
+        return new LeituraQEE();
+    }
+
+    public LeituraQEE preparaMMSM() {
         return new LeituraQEE();
     }
 
@@ -514,6 +647,10 @@ public class RespostaAbsoluto {
 
     public boolean isAb08() {
         return mData[0] == ProtocoloAbsoluto.ComandoAB && mData[5] == ProtocoloAbsoluto.AB08;
+    }
+
+    public boolean isEB17() {
+        return mData[0] == ProtocoloAbsoluto.ComandoEB && mData[5] == ProtocoloAbsoluto.EB17;
     }
 
     public boolean isEB90() {
@@ -650,6 +787,37 @@ public class RespostaAbsoluto {
         public ArrayList<Long> mGrandezasC3 = new ArrayList<Long>();
     }
 
+    public static class LeituraEB17 {
+
+        public boolean isLeitura;
+        public byte ValeAlteracao;
+
+        public String TelefonesDeteccaoFalhas;
+        public String Telefone1;
+        public String Telefone2;
+        public String Telefone3;
+        public String Telefone4;
+        public byte QtdTelefones;
+        public byte Eventos;
+        public byte Ciclos;
+        public byte RepeticoesEtapa1;
+        public short Intervalo1;
+        public short Intervalo2;
+        public String TelefoneKeepAlive;
+        public byte Validade;
+        public byte FrequenciaKeepAlive;
+
+        @Override
+        public String toString() {
+            return "LeituraEB90 {" +
+                    "\nÉ leitura: " + isLeitura +
+                    "\nAlterações: " + ValeAlteracao +
+                    "\nTelefones Detecção Falhas: " + TelefonesDeteccaoFalhas +
+                    "\nTelefones Keep Alive: " + TelefoneKeepAlive +
+                    "\n}";
+        }
+    }
+
     public static class LeituraEB90 {
 
         public boolean isLeitura;
@@ -695,6 +863,38 @@ public class RespostaAbsoluto {
         }
     }
 
+    public class LeituraCabecalhoMMSM {
+        public long numeroPacotes;
+        public long pacoteAtual;
+        public int numeroBytes;
+        public int posicaoAtual;
+        public long numeroRegistros;
+        public long numeroRegistrosValidos;
+        public long intevaloQEE;
+        public int grandezas;
+        public String textdataInicio;
+        public Calendar dataInicio;
+        public String textdataFim;
+        public Calendar dataFim;
+
+
+        public float DRP;
+        public float DRC;
+        public float DTT95;
+        public float FD95;
+        public float tensaoReferencia;
+        public float constanteMultiplicacaoFrequencia;
+        public float constanteMultiplicacaoTemperatura;
+        public float constanteMultiplicacaoTensao;
+        public float constanteMultiplicacaoDesequilibrio;
+        public float constanteMultiplicacaoHarmonicas;
+        public float constanteMultiplicacaoFatorPotencia;
+        public float percentualTensaoPrecariaSuperior;
+        public float percentualTensaoPrecariaInferior;
+        public float percentualTensaoCriticaSuperior;
+        public float percentualTensaoCriticaInferior;
+        public byte tipoLigacao;
+    }
 
     public class LeituraCabecalhoQEE {
         public long numeroPacotes;

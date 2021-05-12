@@ -79,4 +79,9 @@
         android:visible="false"
         android:title="Modo Teste"/>
 
+    <item
+        android:id="@+id/menu_configuracao_nic"
+        android:visible="false"
+        android:title="Configuração NIC"/>
+
 </menu>

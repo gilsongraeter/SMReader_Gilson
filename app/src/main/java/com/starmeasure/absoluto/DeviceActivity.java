@@ -25,7 +25,6 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.InputFilter;
 import android.util.Log;
@@ -57,11 +56,11 @@ import com.starmeasure.absoluto.filemanager.controller.CargaController;
 import com.starmeasure.absoluto.filemanager.model.Carga;
 import com.starmeasure.protocoloabsoluto.ComandoAbsoluto;
 import com.starmeasure.protocoloabsoluto.MedidorAbsoluto;
+import com.starmeasure.protocoloabsoluto.ProtocoloAbsoluto;
 import com.starmeasure.protocoloabsoluto.RespostaAbsoluto;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Text;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -86,7 +85,9 @@ public class DeviceActivity extends AppCompatActivity
     private boolean isNewModule = false;
 
     private Dialog dialogMonitoramento;
+    private Dialog dialogConfiguracaoNIC;
     private ComandoAbsoluto.EB90 mEB90;
+    private ComandoAbsoluto.EB17 mEB17;
     private String monitoramentoNumeroEasy;
 
     private String mDeviceName;
@@ -100,9 +101,11 @@ public class DeviceActivity extends AppCompatActivity
     private List<MedidorAbsoluto> medidores;
     private boolean rodandoCarga = false;
     private boolean rodandoEB90 = false;
+    private boolean rodandoEB17 = false;
     private Carga mCarga;
     private ComandoAbsoluto.CargaDePrograma mCargaDePrograma;
     private int contaTentativasContador = 0;
+    private int IntervaloDiasMMSM = 0;
 
     private Handler mHandler;
     private Runnable mLeituraMedidorRunnable;
@@ -111,6 +114,21 @@ public class DeviceActivity extends AppCompatActivity
     private static final long TIMEOUT_MM = 5000;
 
     private AlertDialog progressDialog;
+
+    boolean bAlteracaoTelefoneDF = false;
+    boolean bAlteracaoTelefoneKeepAlive = false;
+    String sTelefone1 = "";
+    String sTelefone2 = "";
+    String sTelefone3 = "";
+    String sTelefone4 = "";
+    String sTelefoneKeepAlive = "";
+    byte iEventos = 0;
+    byte iCiclos = 0;
+    byte iRepeticoes = 0;
+    short iIntervalo1 = 0;
+    short iIntervalo2 = 0;
+    byte iValidade = 0;
+    byte iFrequenciaKeepAlive = 0;
 
     public enum TipoOperacao {
         RegistradoresAtuais,
@@ -127,14 +145,18 @@ public class DeviceActivity extends AppCompatActivity
         MonitoramentoDeTransformador,
         ModoTeste,
         IntervaloMM,
+        InicioMemoriaMassaSM,
+        MemoriaMassaSM,
+        ConfiguracaoNIC,
         FIM
     }
 
     public enum TipoMedidor {
-        ABOSOLUTO,
+        ABSOLUTO,
         EASY_TRAFO,
         EASY_VER,
-        EASY_VOLT
+        EASY_VOLT,
+        MAX_EXT_UNQ
     }
 
     private Dialog dialogModoTeste = null;
@@ -144,7 +166,7 @@ public class DeviceActivity extends AppCompatActivity
     private boolean deveLerTudo = false;
     private boolean leuMedidoresIndividuais = false;
     private boolean leuEasyTrafo = false;
-    private TipoMedidor tipo_medidor = TipoMedidor.ABOSOLUTO;
+    private TipoMedidor tipo_medidor = TipoMedidor.ABSOLUTO;
     private boolean medidorSemRele = false;
     private TipoOperacao funcaoEmExecucao = TipoOperacao.RegistradoresAtuais;
     private Handler mTimeoutHandler;
@@ -163,9 +185,12 @@ public class DeviceActivity extends AppCompatActivity
     private RespostaAbsoluto.LeituraDados51 dadosAbnt51;
     private RespostaAbsoluto.LeituraDados52 processa52;
     private RespostaAbsoluto.LeituraCabecalhoQEE dadosCabecalhoQEE;
+    private RespostaAbsoluto.LeituraCabecalhoMMSM dadosCabecalhoMMSM;
     private RespostaAbsoluto.LeituraQEE processaQEE;
+    private RespostaAbsoluto.LeituraQEE processaMMSM;
     private ComandoAbsoluto.EB92 eb92;
     private byte[] mRespostaQEE;
+    private byte[] mRespostaMMSM;
 
 
     private byte mRetentativas = 0;
@@ -199,7 +224,7 @@ public class DeviceActivity extends AppCompatActivity
             public void onClick(View v) {
                 if (mRefreshStatus.getAnimation() == null) {
                     animateRefresh();
-                    if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+                    if (tipo_medidor == TipoMedidor.ABSOLUTO) {
                         if (medidores != null && medidores.size() > 0)
                             enviarProximoStatusMedidor("99999999");
                     } else {
@@ -224,14 +249,17 @@ public class DeviceActivity extends AppCompatActivity
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(llm);
-        if (mDeviceName.startsWith("ET") || mDeviceName.startsWith("MAX")) {
+        if (mDeviceName.startsWith("ET01")||(mDeviceName.startsWith("ET1"))) {
             tipo_medidor = TipoMedidor.EASY_TRAFO;
+        } else if (mDeviceName.startsWith("ET3")) {
+                tipo_medidor = TipoMedidor.EASY_VOLT;
         } else if (mDeviceName.startsWith("EV")) {
             tipo_medidor = TipoMedidor.EASY_VER;
+        } else if(mDeviceName.startsWith("MAX") || mDeviceName.startsWith("EXT") || mDeviceName.startsWith("UNQ")){
+            tipo_medidor = TipoMedidor.MAX_EXT_UNQ;
         }
 
-
-        if (tipo_medidor != TipoMedidor.ABOSOLUTO) {
+        if (tipo_medidor != TipoMedidor.ABSOLUTO) {
             CardView mainLayout = this.findViewById(R.id.unidades_consumidoras_header);
             mainLayout.setVisibility(LinearLayout.GONE);
         }
@@ -266,13 +294,17 @@ public class DeviceActivity extends AppCompatActivity
             enviarCargaDePrograma();
         } else {
 
-            if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+            if (tipo_medidor == TipoMedidor.ABSOLUTO) {
                 showProgressBar("Lendo medidores individuais");
             } else {
                 if (tipo_medidor == TipoMedidor.EASY_TRAFO) {
-                    showProgressBar("Lendo Easy Trafo");
-                } else {
-                    showProgressBar("Lendo Easy Ver");
+                    showProgressBar("Lendo easyTrafo");
+                } else if(tipo_medidor == TipoMedidor.EASY_VOLT) {
+                    showProgressBar("Lendo easyVolt");
+                } else if(tipo_medidor == TipoMedidor.EASY_VER) {
+                    showProgressBar("Lendo easyVer");
+                } else if(tipo_medidor == TipoMedidor.MAX_EXT_UNQ){
+                    showProgressBar("Lendo Max-Ext-Unq");
                 }
             }
 
@@ -393,7 +425,6 @@ public class DeviceActivity extends AppCompatActivity
         mHandler.postDelayed(mMMRunnable, TIMEOUT_MM);
     }
 
-
     private void showProgressBar(String mensagem) {
         mLeituraMedidorRunnable = new Runnable() {
             @Override
@@ -422,7 +453,7 @@ public class DeviceActivity extends AppCompatActivity
 
     private void enviarLeituraMedidoresIndividuais() {
         new Handler().post(this::enviarAbnt21);
-        if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+        if (tipo_medidor == TipoMedidor.ABSOLUTO) {
             mMedidoresIndividuaisRunnable = () -> {
                 if (!leuMedidoresIndividuais) {
                     leuMedidoresIndividuais = true;
@@ -701,11 +732,24 @@ public class DeviceActivity extends AppCompatActivity
         return new byte[]{0x00, 0x00, 0x00, 0x00, (byte) 0x91};
     }
 
-    private void enviarLeituraConfiguracao() {
-        enviarComandoComposto(
-                new ComandoAbsoluto.LeituraConfiguracaoMedidor()
-                        .build(tipo_medidor == TipoMedidor.ABOSOLUTO)
-        );
+    private void enviarLeituraConfiguracao(TipoMedidor tipo_medidor) {
+        switch(tipo_medidor){
+            case ABSOLUTO:
+            case MAX_EXT_UNQ:
+                enviarComandoComposto(
+                        new ComandoAbsoluto.LeituraConfiguracaoMedidor()
+                                .build(true)
+                );
+                break;
+            case EASY_TRAFO:
+            case EASY_VER:
+            case EASY_VOLT:
+                enviarComandoComposto(
+                        new ComandoAbsoluto.LeituraConfiguracaoMedidor()
+                                .build(false)
+                );
+                break;
+        }
     }
 
     private void enviarLeituraParametrosHospedeiro() {
@@ -743,7 +787,7 @@ public class DeviceActivity extends AppCompatActivity
                 byte[] data = new ComandoAbsoluto
                         .ABNT21()
                         .comMedidorNumero("000000")
-                        .build((tipo_medidor == TipoMedidor.ABOSOLUTO));
+                        .build((tipo_medidor == TipoMedidor.ABSOLUTO));
                 enviarComando(data);
                 Log.d(TAG, "RETRY ET: " + Util.ByteArrayToHexString(data));
             }
@@ -753,7 +797,7 @@ public class DeviceActivity extends AppCompatActivity
         byte[] data = new ComandoAbsoluto
                 .ABNT21()
                 .comMedidorNumero("000000")
-                .build((tipo_medidor == TipoMedidor.ABOSOLUTO));
+                .build((tipo_medidor == TipoMedidor.ABSOLUTO));
         enviarComando(data);
         Log.d(TAG, "Enviando ABNT21: " + Util.ByteArrayToHexString(data));
         mRetentativas = 1;
@@ -765,7 +809,7 @@ public class DeviceActivity extends AppCompatActivity
         byte[] data = new ComandoAbsoluto
                 .ABNT87()
                 .comMedidorNumero("000000")
-                .build((tipo_medidor == TipoMedidor.ABOSOLUTO));
+                .build((tipo_medidor == TipoMedidor.ABSOLUTO));
         enviarComando(data);
         Log.d(TAG, "Enviando ET: " + Util.ByteArrayToHexString(data));
     }
@@ -786,7 +830,7 @@ public class DeviceActivity extends AppCompatActivity
                 new ComandoAbsoluto.AB06AlteracaoCorteReligamento()
                         .comMedidorNumero(numeroMedidor)
                         .efetuaLeitura()
-                        .build((tipo_medidor == TipoMedidor.ABOSOLUTO))
+                        .build((tipo_medidor == TipoMedidor.ABSOLUTO))
         );
     }
 
@@ -807,7 +851,7 @@ public class DeviceActivity extends AppCompatActivity
                         byte[] comando = new ComandoAbsoluto.AB11SolicitacaoAberturaSessao()
                                 .comMedidorNumero(nm)
                                 .comSenha(password.getText().toString())
-                                .build((tipo_medidor == TipoMedidor.ABOSOLUTO));
+                                .build((tipo_medidor == TipoMedidor.ABSOLUTO));
                         enviarComando(comando);
                         InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                         if (imm != null)
@@ -835,7 +879,7 @@ public class DeviceActivity extends AppCompatActivity
             processarRespostaOcorrencia(respostaAbsoluto);
             leuMedidoresIndividuais = false;
         } else if (respostaAbsoluto.isLeituraConfiguracaoMedidor()) {
-            if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+            if (tipo_medidor == TipoMedidor.ABSOLUTO) {
                 processarRespostaConfiguracaoMedidorAbsoluto(respostaAbsoluto);
             } else {
                 processarRespostaConfiguracaoMedidorEasy(respostaAbsoluto);
@@ -849,7 +893,7 @@ public class DeviceActivity extends AppCompatActivity
         } else if (respostaAbsoluto.isAberturaSessao()) {
             processarRespostaAberturaSessao(data[7], respostaAbsoluto);
         } else if (respostaAbsoluto.isAbnt21()) {
-            if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+            if (tipo_medidor == TipoMedidor.ABSOLUTO) {
                 processarRespostaAbnt21Absoluto(respostaAbsoluto);
             } else {
                 processarRespostaAbnt21(respostaAbsoluto);
@@ -894,12 +938,18 @@ public class DeviceActivity extends AppCompatActivity
             } else {
                 processarRespostaEB11(respostaAbsoluto);
             }
+        } else if (respostaAbsoluto.isRespostaMemoriaMassaSM()) {
+            processarRespostaAB52(respostaAbsoluto);
         } else if (respostaAbsoluto.isRespostaMemoriaMassa()) {
             processarRespostaAbnt52(respostaAbsoluto);
         } else if (respostaAbsoluto.isAb08()) {
             processarAB08(respostaAbsoluto);
         } else if (rodandoCarga) {
             processarCargaDePrograma(respostaAbsoluto);
+        } else if (respostaAbsoluto.isEB17()) {
+            if (funcaoEmExecucao == TipoOperacao.ConfiguracaoNIC) {
+                processaEB17(respostaAbsoluto);
+            }
         } else if (respostaAbsoluto.isEB90()) {
             processaEB90(respostaAbsoluto);
         } else if (respostaAbsoluto.isEB92()) {
@@ -907,6 +957,14 @@ public class DeviceActivity extends AppCompatActivity
         } else {
             processarRespostaNaoTratada(data);
         }
+    }
+
+    private void enviaEB17() {
+        Log.i("mEB17", mEB17.toString());
+        enviarComando(mEB17.build());
+        rodandoEB17 = true;
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_loading).setVisibility(View.VISIBLE);
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_enviar_alteracao).setEnabled(false);
     }
 
     private void enviaEB90() {
@@ -918,6 +976,32 @@ public class DeviceActivity extends AppCompatActivity
         dialogMonitoramento.findViewById(R.id.monitoramento_btn_forca_1).setEnabled(false);
         dialogMonitoramento.findViewById(R.id.monitoramento_btn_forca_2).setEnabled(false);
         dialogMonitoramento.findViewById(R.id.monitoramento_enviar_alteracao).setEnabled(false);
+    }
+
+    private void processaEB17(RespostaAbsoluto respostaAbsoluto) {
+        ComandoAbsoluto.EB17 mEB17 = new ComandoAbsoluto.EB17();
+
+        RespostaAbsoluto.LeituraEB17 mLeitura = respostaAbsoluto.interpretaEB17();
+        Log.i("pcEB17", mLeitura.toString());
+        //if(mEB17 != null)
+        //{
+        //    mEB17.setLeitura(true);
+        //}
+
+        rodandoEB17 = false;
+
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_loading).setVisibility(View.INVISIBLE);
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_enviar_alteracao).setEnabled(true);
+
+        Toast.makeText(this, "Dados recebidos...", Toast.LENGTH_SHORT).show();
+
+        atualizaDialogConfiguracaoNIC(mLeitura);
+
+        dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone1_check).setEnabled(true);
+        dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone2_check).setEnabled(true);
+        dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone3_check).setEnabled(true);
+        dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone4_check).setEnabled(true);
+        dialogConfiguracaoNIC.findViewById(R.id.cb_Telefone_Keep_Alive).setEnabled(true);
     }
 
     private void processaEB90(RespostaAbsoluto respostaAbsoluto) {
@@ -1037,6 +1121,203 @@ public class DeviceActivity extends AppCompatActivity
         etSubtensaoFaseB.setText("");
         etSubtensaoFaseC.setHint(String.valueOf(mLeitura.nivelSubtensaoFaseC));
         etSubtensaoFaseC.setText("");
+    }
+
+    private void atualizaDialogConfiguracaoNIC(RespostaAbsoluto.LeituraEB17 mLeitura) {
+
+        CheckBox cbTelefone1 = dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone1_check);
+        CheckBox cbTelefone2 = dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone2_check);
+        CheckBox cbTelefone3 = dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone3_check);
+        CheckBox cbTelefone4 = dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone4_check);
+
+        EditText etTelefone1 = dialogConfiguracaoNIC.findViewById(R.id.etTelefone1);
+        EditText etTelefone2 = dialogConfiguracaoNIC.findViewById(R.id.etTelefone2);
+        EditText etTelefone3 = dialogConfiguracaoNIC.findViewById(R.id.etTelefone3);
+        EditText etTelefone4 = dialogConfiguracaoNIC.findViewById(R.id.etTelefone4);
+
+        CheckBox cbFaltaEnergia = dialogConfiguracaoNIC.findViewById(R.id.cb_falta_energia);
+        CheckBox cbSubtensao = dialogConfiguracaoNIC.findViewById((R.id.cb_subtensao_ciclos));
+        CheckBox cbSobretensao = dialogConfiguracaoNIC.findViewById(R.id.cb_sobretensao_ciclos);
+        CheckBox cbAberturaTampa = dialogConfiguracaoNIC.findViewById(R.id.cb_abertura_tampa);
+
+        RadioButton rbCicloPadrao = dialogConfiguracaoNIC.findViewById(R.id.rb_ciclo_padrao);
+        RadioButton rbCicloEtapa2 = dialogConfiguracaoNIC.findViewById(R.id.rb_etapa2);
+
+        EditText etRepeticoes = dialogConfiguracaoNIC.findViewById(R.id.etRepeticoes);
+        EditText etIntervalo1 = dialogConfiguracaoNIC.findViewById(R.id.etIntervalo1);
+        EditText etIntervalo2 = dialogConfiguracaoNIC.findViewById(R.id.etIntervalo2);
+
+        CheckBox cbTelefoneKeepAlive = dialogConfiguracaoNIC.findViewById(R.id.cb_Telefone_Keep_Alive);
+
+        EditText etTelefoneKeepAlive = dialogConfiguracaoNIC.findViewById(R.id.etTelefoneKeepAlive);
+        EditText etFrequenciaKeepAlive = dialogConfiguracaoNIC.findViewById(R.id.etFrequenciaKeepAlive);
+
+        sTelefone1 = mLeitura.Telefone1;
+        sTelefone2 = mLeitura.Telefone2;
+        sTelefone3 = mLeitura.Telefone3;
+        sTelefone4 = mLeitura.Telefone4;
+        sTelefoneKeepAlive = mLeitura.TelefoneKeepAlive;
+        iEventos = mLeitura.Eventos;
+        iCiclos = mLeitura.Ciclos;
+        iRepeticoes = mLeitura.RepeticoesEtapa1;
+        iIntervalo1 = mLeitura.Intervalo1;
+        iIntervalo2 = mLeitura.Intervalo2;
+        iValidade = mLeitura.Validade;
+        iFrequenciaKeepAlive = mLeitura.FrequenciaKeepAlive;
+
+        if((!mLeitura.Telefone1.contains("00000"))&&(((byte)(mLeitura.Telefone1.length())) > 6))
+        {
+            etTelefone1.setText(mLeitura.Telefone1);
+            cbTelefone1.setChecked(true);
+            cbTelefone1.setEnabled(true);
+        }
+        else
+        {
+            etTelefone1.setText("");
+            cbTelefone1.setChecked(false);
+            cbTelefone1.setEnabled(false);
+        }
+
+        if((!mLeitura.Telefone2.contains("00000"))&&(((byte)(mLeitura.Telefone2.length())) > 6))
+        {
+            etTelefone2.setText(mLeitura.Telefone2);
+            cbTelefone2.setChecked(true);
+            cbTelefone2.setEnabled(true);
+        }
+        else
+        {
+            etTelefone2.setText("");
+            cbTelefone2.setChecked(false);
+            cbTelefone2.setEnabled(false);
+        }
+
+        if((!mLeitura.Telefone3.contains("00000"))&&(((byte)(mLeitura.Telefone3.length())) > 6))
+        {
+            etTelefone3.setText(mLeitura.Telefone3);
+            cbTelefone3.setChecked(true);
+            cbTelefone3.setEnabled(true);
+        }
+        else
+        {
+            etTelefone3.setText("");
+            cbTelefone3.setChecked(false);
+            cbTelefone3.setEnabled(false);
+        }
+
+        if((!mLeitura.Telefone4.contains("00000"))&&(((byte)(mLeitura.Telefone4.length())) > 6))
+        {
+            etTelefone4.setText(mLeitura.Telefone4);
+            cbTelefone4.setChecked(true);
+            cbTelefone4.setEnabled(true);
+        }
+        else
+        {
+            etTelefone4.setText("");
+            cbTelefone4.setChecked(false);
+            cbTelefone4.setEnabled(false);
+        }
+
+        if(((mLeitura.Eventos >> 0) & 0x01) == 0x01)
+        {
+            // Bit 0 ligado indicando Falta de Energia
+            cbFaltaEnergia.setChecked(true);
+        }
+        else
+        {
+            cbFaltaEnergia.setChecked(false);
+        }
+
+        if(((mLeitura.Eventos >> 1) & 0x01) == 0x01)
+        {
+            // Bit 0 ligado indicando Subtensão
+            cbSubtensao.setChecked(true);
+        }
+        else
+        {
+            cbSubtensao.setChecked(false);
+        }
+
+        if(((mLeitura.Eventos >> 2) & 0x01) == 0x01)
+        {
+            // Bit 0 ligado indicando Sobretensão
+            cbSobretensao.setChecked(true);
+        }
+        else
+        {
+            cbSobretensao.setChecked(false);
+        }
+
+        if(((mLeitura.Eventos >> 3) & 0x01) == 0x01)
+        {
+            // Bit 0 ligado indicando Abertura de Tampa
+            cbAberturaTampa.setChecked(true);
+        }
+        else
+        {
+            cbAberturaTampa.setChecked(false);
+        }
+
+        if((mLeitura.Ciclos == 0x00) || (mLeitura.Ciclos  == 0x01))
+        {
+            // Ciclo Padrão
+            rbCicloPadrao.setChecked(true);
+        }
+        else
+        {
+            rbCicloPadrao.setChecked(false);
+        }
+
+        if(mLeitura.Ciclos == 0x02)
+        {
+            // Ciclo Etapa 2
+            rbCicloEtapa2.setChecked(true);
+        }
+        else
+        {
+            rbCicloEtapa2.setChecked(false);
+        }
+
+        if(mLeitura.RepeticoesEtapa1 > -1)
+        {
+            etRepeticoes.setText(String.valueOf(mLeitura.RepeticoesEtapa1));
+        }
+
+        if(mLeitura.Intervalo1 > -1)
+        {
+            etIntervalo1.setText(String.valueOf(mLeitura.Intervalo1));
+        }
+
+        if(mLeitura.Intervalo2 > -1)
+        {
+            etIntervalo2.setText(String.valueOf(mLeitura.Intervalo2));
+        }
+
+        if((!mLeitura.TelefoneKeepAlive.contains("00000"))&&(((byte)(mLeitura.TelefoneKeepAlive.length())) > 6))
+        {
+            etTelefoneKeepAlive.setText(mLeitura.TelefoneKeepAlive);
+            cbTelefoneKeepAlive.setChecked(true);
+            cbTelefoneKeepAlive.setEnabled(true);
+        }
+        else
+        {
+            etTelefoneKeepAlive.setText("");
+            cbTelefoneKeepAlive.setChecked(false);
+            cbTelefoneKeepAlive.setEnabled(false);
+        }
+
+        if(mLeitura.FrequenciaKeepAlive > -1)
+        {
+            etFrequenciaKeepAlive.setText(String.valueOf(mLeitura.FrequenciaKeepAlive));
+        }
+
+        if(mLeitura.isLeitura)
+        {
+            cbTelefone1.setEnabled(true);
+            cbTelefone2.setEnabled(true);
+            cbTelefone3.setEnabled(true);
+            cbTelefone4.setEnabled(true);
+            cbTelefoneKeepAlive.setEnabled(true);
+        }
     }
 
     private void createDialogMonitoramento() {
@@ -1196,6 +1477,537 @@ public class DeviceActivity extends AppCompatActivity
         dialogMonitoramento.show();
     }
 
+    private void createDialogConfiguracaoNIC() {
+        dialogConfiguracaoNIC = new Dialog(this);
+        dialogConfiguracaoNIC.setContentView(R.layout.dialog_configuracaonic_easy_trafo);
+        if (dialogConfiguracaoNIC.getWindow() != null)
+            dialogConfiguracaoNIC.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        //someComBotoesDaConfiguracaoNIC();
+
+        CheckBox cbTelefone1 = dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone1_check);
+        CheckBox cbTelefone2 = dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone2_check);
+        CheckBox cbTelefone3 = dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone3_check);
+        CheckBox cbTelefone4 = dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone4_check);
+        EditText etTelefone1 = dialogConfiguracaoNIC.findViewById(R.id.etTelefone1);
+        EditText etTelefone2 = dialogConfiguracaoNIC.findViewById(R.id.etTelefone2);
+        EditText etTelefone3 = dialogConfiguracaoNIC.findViewById(R.id.etTelefone3);
+        EditText etTelefone4 = dialogConfiguracaoNIC.findViewById(R.id.etTelefone4);
+
+        CheckBox cbAberturaTampa = dialogConfiguracaoNIC.findViewById(R.id.cb_abertura_tampa);
+        CheckBox cbFaltaEnergia = dialogConfiguracaoNIC.findViewById(R.id.cb_falta_energia);
+        CheckBox cbSubtensao = dialogConfiguracaoNIC.findViewById(R.id.cb_subtensao_ciclos);
+        CheckBox cbSobretensao = dialogConfiguracaoNIC.findViewById(R.id.cb_sobretensao_ciclos);
+
+        RadioButton rbCicloPadrao = dialogConfiguracaoNIC.findViewById(R.id.rb_ciclo_padrao);
+        RadioButton rbCicloEtapa2 = dialogConfiguracaoNIC.findViewById(R.id.rb_etapa2);
+
+        EditText etRepeticoes = dialogConfiguracaoNIC.findViewById(R.id.etRepeticoes);
+        EditText etIntervalo1 = dialogConfiguracaoNIC.findViewById(R.id.etIntervalo1);
+        EditText etIntervalo2 = dialogConfiguracaoNIC.findViewById(R.id.etIntervalo2);
+
+        CheckBox cbTelefoneKeepAlive = dialogConfiguracaoNIC.findViewById(R.id.cb_Telefone_Keep_Alive);
+        EditText etTelefoneKeepAlive = dialogConfiguracaoNIC.findViewById(R.id.etTelefoneKeepAlive);
+        EditText etFrequenciaKeepAlive = dialogConfiguracaoNIC.findViewById(R.id.etFrequenciaKeepAlive);
+
+        dialogConfiguracaoNIC.findViewById(R.id.etTelefone1).setOnClickListener(v -> {
+            cbTelefone1.setEnabled(true);
+        });
+
+        dialogConfiguracaoNIC.findViewById(R.id.etTelefone2).setOnClickListener(v -> {
+            cbTelefone2.setEnabled(true);
+        });
+
+        dialogConfiguracaoNIC.findViewById(R.id.etTelefone3).setOnClickListener(v -> {
+            cbTelefone3.setEnabled(true);
+        });
+
+        dialogConfiguracaoNIC.findViewById(R.id.etTelefone4).setOnClickListener(v -> {
+            cbTelefone4.setEnabled(true);
+        });
+
+        dialogConfiguracaoNIC.findViewById(R.id.etTelefoneKeepAlive).setOnClickListener(v -> {
+            cbTelefoneKeepAlive.setEnabled(true);
+        });
+
+        dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone1_check).setOnClickListener(v -> {
+            bAlteracaoTelefoneDF = true;
+            if(cbTelefone1.isChecked())
+            {
+                etTelefone1.setEnabled(true);
+            }
+            else
+            {
+                etTelefone1.setEnabled(false);
+                etTelefone1.setText("");
+            }
+        });
+
+        dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone2_check).setOnClickListener(v -> {
+            bAlteracaoTelefoneDF = true;
+            if(cbTelefone2.isChecked())
+            {
+                etTelefone2.setEnabled(true);
+            }
+            else
+            {
+                etTelefone2.setEnabled(false);
+                etTelefone2.setText("");
+            }
+        });
+
+        dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone3_check).setOnClickListener(v -> {
+            bAlteracaoTelefoneDF = true;
+            if(cbTelefone3.isChecked())
+            {
+                etTelefone3.setEnabled(true);
+            }
+            else
+            {
+                etTelefone3.setEnabled(false);
+                etTelefone3.setText("");
+            }
+        });
+
+        dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone4_check).setOnClickListener(v -> {
+            bAlteracaoTelefoneDF = true;
+            if(cbTelefone4.isChecked())
+            {
+                etTelefone4.setEnabled(true);
+            }
+            else
+            {
+                etTelefone4.setEnabled(false);
+                etTelefone4.setText("");
+            }
+        });
+
+        dialogConfiguracaoNIC.findViewById(R.id.cb_Telefone_Keep_Alive).setOnClickListener(v -> {
+            bAlteracaoTelefoneKeepAlive = true;
+            if(cbTelefoneKeepAlive.isChecked())
+            {
+                etTelefoneKeepAlive.setEnabled(true);
+            }
+            else
+            {
+                etTelefoneKeepAlive.setEnabled(false);
+                etTelefoneKeepAlive.setText("");
+            }
+        });
+
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_btn_close).setOnClickListener(v -> dialogConfiguracaoNIC.dismiss());
+
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_btn_forca_1).setOnClickListener(v -> {
+            //mEB90.setNumeroTransformador(1);
+            //enviaEB90();
+        });
+
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_btn_forca_2).setOnClickListener(v -> {
+            //mEB90.setNumeroTransformador(2);
+            //enviaEB90();
+        });
+
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_enviar_alteracao).setOnClickListener(v -> {
+            String Telefone1Aux = "00000000000";
+            String Telefone2Aux = "00000000000";
+            String Telefone3Aux = "00000000000";
+            String Telefone4Aux = "00000000000";
+            String TelefonesDFAux = Telefone1Aux + Telefone2Aux + Telefone3Aux + Telefone4Aux;
+            String TelefoneKeepAliveAux = "00000000000";
+
+            String etRepeticoesAux = "0";
+            String etIntervalo1Aux = "0";
+            String etIntervalo2Aux = "0";
+            String etFrequenciaKeepAliveAux = "0";
+
+            boolean bAlteracaoEventos = false;
+
+            byte QtdTelefonesAux= 0;
+            byte EventosAux = 0;
+            byte RepeticoesAux = 0;
+            byte Intervalo1Aux = 0;
+            byte Intervalo2Aux = 0;
+            byte Repeticoes = 0;
+            byte Intervalo1 = 0;
+            byte Intervalo2 = 0;
+            byte FrequenciaKeepAliveAux = 0;
+            byte TamCampo = 0;
+
+            mEB17 = new ComandoAbsoluto.EB17().comNumerMedidor(monitoramentoNumeroEasy);
+            mEB17.setLeitura(false);
+
+            if(cbTelefone1.isChecked())
+            {
+                Telefone1Aux = etTelefone1.getText().toString();
+                TamCampo = (byte)Telefone1Aux.length();
+                if(TamCampo > 0)
+                {
+                    if(TamCampo < 11)
+                    {
+                        for(byte i = 0; i < (11-TamCampo);i++)
+                        {
+                            Telefone1Aux = "0" + Telefone1Aux;
+                        }
+                    }
+                    else
+                    {
+                        Telefone1Aux = Telefone1Aux.substring(0,11);
+                    }
+                }
+                else
+                {
+                    Telefone1Aux = "00000000000";
+                }
+                bAlteracaoTelefoneDF = true;
+                QtdTelefonesAux++;
+            }
+
+            if(cbTelefone2.isChecked())
+            {
+                Telefone2Aux = etTelefone2.getText().toString();
+                TamCampo = (byte)(Telefone2Aux.length());
+                if(TamCampo > 0)
+                {
+                    if(TamCampo < 11)
+                    {
+                        for(byte i = 0; i < (11-TamCampo);i++)
+                        {
+                            Telefone2Aux = "0" + Telefone2Aux;
+                        }
+                    }
+                    else
+                    {
+                        Telefone2Aux = Telefone2Aux.substring(0,11);
+                    }
+                }
+                else
+                {
+                    Telefone2Aux = "00000000000";
+                }
+                bAlteracaoTelefoneDF = true;
+                QtdTelefonesAux++;
+            }
+
+            if(cbTelefone3.isChecked())
+            {
+                Telefone3Aux = etTelefone3.getText().toString();
+                TamCampo = (byte)(Telefone3Aux.length());
+                if(TamCampo > 0)
+                {
+                    if(TamCampo < 11)
+                    {
+                        for(byte i = 0; i < (11-TamCampo);i++)
+                        {
+                            Telefone3Aux = "0" + Telefone3Aux;
+                        }
+                    }
+                    else
+                    {
+                        Telefone3Aux = Telefone3Aux.substring(0,11);
+                    }
+                }
+                else
+                {
+                    Telefone3Aux = "00000000000";
+                }
+                bAlteracaoTelefoneDF = true;
+                QtdTelefonesAux++;
+            }
+
+            if(cbTelefone4.isChecked())
+            {
+                Telefone4Aux = etTelefone4.getText().toString();
+                TamCampo = (byte)(Telefone4Aux.length());
+                if(TamCampo > 0)
+                {
+                    if(TamCampo < 11)
+                    {
+                        for(byte i = 0; i < (11-TamCampo);i++)
+                        {
+                            Telefone4Aux = "0" + Telefone4Aux;
+                        }
+                    }
+                    else
+                    {
+                        Telefone4Aux = Telefone4Aux.substring(0,11);
+                    }
+                }
+                else
+                {
+                    Telefone4Aux = "00000000000";
+                }
+                bAlteracaoTelefoneDF = true;
+                QtdTelefonesAux++;
+            }
+
+            if(!(sTelefone1.contentEquals(Telefone1Aux)) || !(sTelefone2.contentEquals(Telefone2Aux)) || !(sTelefone3.contentEquals(Telefone3Aux)) || !(sTelefone4.contentEquals(Telefone4Aux)))
+            {
+                // Algum dos telefones marcados
+                bAlteracaoTelefoneDF = true;
+            }
+            else
+            {
+                // Nenhum telefone marcado
+                bAlteracaoTelefoneDF = false;
+            }
+
+            if(bAlteracaoTelefoneDF)
+            {
+                mEB17.setAlteracaoTelefones(true);
+                TelefonesDFAux = Telefone1Aux + Telefone2Aux + Telefone3Aux + Telefone4Aux;
+                mEB17.setTelefonesDeteccaoFalhas(TelefonesDFAux);
+                mEB17.setQtdTelefones(QtdTelefonesAux);
+            }else
+            {
+                mEB17.setAlteracaoTelefones(false);
+            }
+
+            if(cbFaltaEnergia.isChecked())
+            {
+                bAlteracaoEventos = true;
+                EventosAux |= 0x01;
+            }
+            else
+            {
+                EventosAux &= 0xFE;
+            }
+
+            if(cbSubtensao.isChecked())
+            {
+                bAlteracaoEventos = true;
+                EventosAux |= 0x02;
+            }
+            else
+            {
+                EventosAux &= 0xFD;
+            }
+
+            if(cbSobretensao.isChecked())
+            {
+                bAlteracaoEventos = true;
+                EventosAux |= 0x04;
+            }
+            else
+            {
+                EventosAux &= 0xFB;
+            }
+
+            if(cbAberturaTampa.isChecked())
+            {
+                bAlteracaoEventos = true;
+                EventosAux |= 0x08;
+            }
+            else
+            {
+                EventosAux &= 0xF7;
+            }
+
+            if(iEventos != EventosAux)
+            {
+                // Houve mudança nos eventos
+                bAlteracaoEventos = true;
+            }
+            else
+            {
+                bAlteracaoEventos = false;
+            }
+
+            if(bAlteracaoEventos)
+            {
+                mEB17.setAlteracaoEventos(true);
+                mEB17.setEventos(EventosAux);
+            }
+            else
+            {
+                mEB17.setAlteracaoEventos(false);
+            }
+
+            if(rbCicloPadrao.isChecked() && (iCiclos == 0x02))
+            {
+                mEB17.setAlteracaoCiclos(true);
+                mEB17.setCiclos((byte)0x00);
+            }
+            else if(rbCicloEtapa2.isChecked() && ((iCiclos == 0x00) || (iCiclos == 0x01)))
+            {
+                mEB17.setAlteracaoCiclos(true);
+                mEB17.setCiclos((byte)0x02);
+            }
+            else
+            {
+                mEB17.setAlteracaoCiclos(false);
+            }
+
+            etRepeticoesAux = etRepeticoes.getText().toString();
+            if(!etRepeticoesAux.isEmpty())
+            {
+                try {
+                    byte d = Byte.parseByte(etRepeticoesAux);
+
+                    if(iRepeticoes != d)
+                    {
+                        mEB17.setAlteracaoRepeticoes(true);
+                        mEB17.setRepeticoesEtapa1(d);
+                    }
+                    else
+                    {
+                        mEB17.setAlteracaoRepeticoes(false);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, "Número de Repetições inválido", Toast.LENGTH_SHORT).show();
+                }
+            }
+            else
+            {
+                // Qtd de Repetições nao foi digitado
+                mEB17.setAlteracaoRepeticoes(false);
+                mEB17.setRepeticoesEtapa1((byte)0x00);
+            }
+
+            etIntervalo1Aux = etIntervalo1.getText().toString();
+            if(!etIntervalo1Aux.isEmpty())
+            {
+                try {
+                    byte d = Byte.parseByte(etIntervalo1Aux);
+
+                    if(iIntervalo1 != d)
+                    {
+                        mEB17.setAlteracaoIntervalo1(true);
+                        mEB17.setIntervalo1(d);
+                    }
+                    else
+                    {
+                        mEB17.setAlteracaoIntervalo1(false);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, "Valor do Intervalo1 inválido", Toast.LENGTH_SHORT).show();
+                }
+            }
+            else
+            {
+                // Intervalo1 nao foi digitado
+                mEB17.setAlteracaoIntervalo1(false);
+                mEB17.setIntervalo1((byte)0x00);
+            }
+
+            etIntervalo2Aux = etIntervalo2.getText().toString();
+            if(!etIntervalo2Aux.isEmpty())
+            {
+                try {
+                    byte d = Byte.parseByte(etIntervalo2Aux);
+
+                    if(iIntervalo2 != d)
+                    {
+                        mEB17.setAlteracaoIntervalo2(true);
+                        mEB17.setIntervalo2(d);
+                    }
+                    else
+                    {
+                        mEB17.setAlteracaoIntervalo2(false);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, "Valor do Intervalo2 inválido", Toast.LENGTH_SHORT).show();
+                }
+            }
+            else
+            {
+                // Intervalo2 nao foi digitado
+                mEB17.setAlteracaoIntervalo2(false);
+                mEB17.setIntervalo2((byte)0x00);
+            }
+
+            if(cbTelefoneKeepAlive.isChecked())
+            {
+                TelefoneKeepAliveAux = etTelefoneKeepAlive.getText().toString();
+                TamCampo = (byte)(TelefoneKeepAliveAux.length());
+                if(TamCampo > 0)
+                {
+                    if(TamCampo < 11)
+                    {
+                        for (byte i = 0; i < (11 - TamCampo); i++)
+                        {
+                            TelefoneKeepAliveAux = "0" + TelefoneKeepAliveAux;
+                        }
+                    }
+                    else
+                    {
+                        TelefoneKeepAliveAux = TelefoneKeepAliveAux.substring(0,11);
+                    }
+                }
+                else
+                {
+                    TelefoneKeepAliveAux = "00000000000";
+                }
+
+                //bAlteracaoTelefoneKeepAlive = true;
+                //mEB17.setTelefoneKeepAlive(TelefoneKeepAliveAux);
+                //mEB17.setAlteracaoTelefoneKeepAlive(true);
+                mEB17.setValidade((byte)0x01);
+            }
+            else
+            {
+                //bAlteracaoTelefoneKeepAlive = true;
+                //mEB17.setAlteracaoTelefoneKeepAlive(true);
+                mEB17.setValidade((byte)0x00);
+            }
+
+            if(!sTelefoneKeepAlive.contentEquals(TelefoneKeepAliveAux))
+            {
+                // Houve alteração do telefone de keep alive
+                bAlteracaoTelefoneKeepAlive = true;
+                mEB17.setTelefoneKeepAlive(TelefoneKeepAliveAux);
+                mEB17.setAlteracaoTelefoneKeepAlive(true);
+            }
+            else
+            {
+                // Não houve alteração de telefone de keep alive
+                mEB17.setAlteracaoTelefoneKeepAlive(false);
+            }
+
+            etFrequenciaKeepAliveAux = etFrequenciaKeepAlive.getText().toString();
+            if(!etFrequenciaKeepAliveAux.isEmpty())
+            {
+                try {
+                    byte d = Byte.parseByte(etFrequenciaKeepAliveAux);
+
+                    if(iFrequenciaKeepAlive != d)
+                    {
+                        mEB17.setAlteracaoFrequenciaKeepAlive(true);
+                        mEB17.setFrequenciaKeepAlive(d);
+                    }
+                    else
+                    {
+                        mEB17.setAlteracaoFrequenciaKeepAlive(false);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, "Valor da Frequência Keep Alive inválida", Toast.LENGTH_SHORT).show();
+                }
+            }
+            enviaEB17();
+
+            Toast.makeText(this, "Enviando alteração de configuração de NIC", Toast.LENGTH_SHORT).show();
+
+            etTelefone1.setEnabled(true);
+            etTelefone2.setEnabled(true);
+            etTelefone3.setEnabled(true);
+            etTelefone4.setEnabled(true);
+            etTelefoneKeepAlive.setEnabled(true);
+
+            cbTelefone1.setEnabled(true);
+            cbTelefone2.setEnabled(true);
+            cbTelefone3.setEnabled(true);
+            cbTelefone4.setEnabled(true);
+            cbTelefoneKeepAlive.setEnabled(true);
+        });
+
+        dialogConfiguracaoNIC.setCancelable(false);
+        dialogConfiguracaoNIC.create();
+        dialogConfiguracaoNIC.show();
+    }
+
     private boolean testaSobreTensaoMonitoramento(int sobretensao) {
         return sobretensao >= 100 && sobretensao <= 300;
     }
@@ -1256,6 +2068,32 @@ public class DeviceActivity extends AppCompatActivity
         dialogMonitoramento.findViewById(R.id.monitoramento_nivel_subtensao_fase_A_result);
         dialogMonitoramento.findViewById(R.id.monitoramento_nivel_subtensao_fase_B_result);
         dialogMonitoramento.findViewById(R.id.monitoramento_nivel_subtensao_fase_C_result);
+        */
+    }
+
+    private void someComBotoesDaConfiguracaoNIC() {
+        if (tipo_medidor == TipoMedidor.EASY_VOLT) {
+            dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone1_check).setVisibility(View.GONE);
+            dialogConfiguracaoNIC.findViewById(R.id.etTelefone1).setVisibility(View.GONE);
+            dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone2_check).setVisibility(View.GONE);
+            dialogConfiguracaoNIC.findViewById(R.id.etTelefone2).setVisibility(View.GONE);
+            dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone3_check).setVisibility(View.GONE);
+            dialogConfiguracaoNIC.findViewById(R.id.etTelefone3).setVisibility(View.GONE);
+            dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone4_check).setVisibility(View.GONE);
+            dialogConfiguracaoNIC.findViewById(R.id.etTelefone4).setVisibility(View.GONE);
+            dialogConfiguracaoNIC.findViewById(R.id.rg_config_ciclos).setVisibility(View.GONE);
+            dialogConfiguracaoNIC.findViewById(R.id.rg_etapa_ciclos).setVisibility(View.GONE);
+            dialogConfiguracaoNIC.findViewById(R.id.etRepeticoes).setVisibility(View.GONE);
+            dialogConfiguracaoNIC.findViewById(R.id.etIntervalo1).setVisibility(View.GONE);
+            dialogConfiguracaoNIC.findViewById(R.id.etIntervalo2).setVisibility(View.GONE);
+        }
+        /*
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_nivel_sobretensao_fase_A_result);
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_nivel_sobretensao_fase_B_result);
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_nivel_sobretensao_fase_C_result);
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_nivel_subtensao_fase_A_result);
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_nivel_subtensao_fase_B_result);
+        dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_nivel_subtensao_fase_C_result);
         */
     }
 
@@ -1470,6 +2308,168 @@ public class DeviceActivity extends AppCompatActivity
         }
     }
 
+    private void processarRespostaAB52(RespostaAbsoluto respostaAbsoluto) {
+        Log.d(TAG, "## Resposta AB52 ...");
+        byte pacote = 1;
+        if (funcaoEmExecucao == TipoOperacao.InicioMemoriaMassaSM) {
+            funcaoEmExecucao = TipoOperacao.MemoriaMassaSM;
+            dadosCabecalhoMMSM = respostaAbsoluto.interpretaRespostaAB52Cabecalho();
+            mRespostaMMSM = new byte[dadosCabecalhoMMSM.numeroBytes];
+            progressDialog = AlertBuilder.createProgressDialog(this, "Enviando pacote " + dadosCabecalhoMMSM.pacoteAtual + " de " + dadosCabecalhoMMSM.numeroPacotes);
+            progressDialog.show();
+            showTimeOutMM();
+            enviaComandoAB52(pacote, (byte) 0x05, IntervaloDiasMMSM);
+        } else {
+            int tamanho = (respostaAbsoluto.mData.length - 11);
+            if ((tamanho + dadosCabecalhoMMSM.posicaoAtual) > mRespostaMMSM.length) {
+                tamanho = mRespostaMMSM.length - dadosCabecalhoMMSM.posicaoAtual;
+            }
+            System.arraycopy(respostaAbsoluto.getData(), 9, mRespostaMMSM, dadosCabecalhoMMSM.posicaoAtual, tamanho);
+            dadosCabecalhoMMSM.posicaoAtual += tamanho;
+            //mRespostaComposta.add(respostaAbsoluto.getData());
+            if (!respostaAbsoluto.interpretaRespostaAB52()) {
+                dadosCabecalhoMMSM.pacoteAtual++;
+                progressDialog.setMessage("Enviando pacote " + dadosCabecalhoMMSM.pacoteAtual + " de " + dadosCabecalhoMMSM.numeroPacotes);
+                showTimeOutMM();
+                enviaComandoAB52(pacote, (byte) 0x05, IntervaloDiasMMSM);
+            } else {
+                mMMRunnable = null;
+                mHandler.removeCallbacksAndMessages(null);
+                progressDialog.setMessage("Aguarde, Processando MM SM.");
+                processaMMSM = respostaAbsoluto.preparaMMSM();
+                //long numero_registros = dadosCabecalhoMMSM.numeroRegistros;
+                for (int j = 0; j < mRespostaQEE.length; j += 31) {
+                    processaMMSM.preencheDados(Arrays.copyOfRange(mRespostaMMSM, j, j + 31));
+                }
+                Log.i(TAG, "Data de Inicio: " + dadosCabecalhoMMSM.textdataInicio + " | " + dadosCabecalhoMMSM.textdataFim);
+
+                Locale br = Locale.forLanguageTag("BR");
+
+                StringBuilder dadosCSV = new StringBuilder();
+                StringBuilder dadosCSVCompleto = new StringBuilder();
+                dadosCSV.append("StarMeasure\n");
+                dadosCSV.append("Ponto;" + mDeviceName.substring(4) + "\n");
+                dadosCSV.append("Area;" + "\n");
+                dadosCSV.append("Numero de Registros;" + dadosCabecalhoMMSM.numeroRegistros + "\n");
+                dadosCSV.append("Intervalo da memoria SM;10\n");
+                dadosCSV.append("Data/Hora de Início;" + dadosCabecalhoMMSM.textdataInicio + "\n");
+                dadosCSV.append("Data/Hora de Final;" + dadosCabecalhoMMSM.textdataFim + "\n");
+                dadosCSV.append("TP Original;1\n");
+                dadosCSV.append("TP;1\n");
+
+                String[] items = new String[]{"Indefinido", "Estrela", "Delta", "Bifásico", "Monofásico", "Série/paralelo", "Delta aterrado"};
+                dadosCSV.append("Tipo de Ligação;" + items[dadosCabecalhoMMSM.tipoLigacao] + "\n");
+                dadosCSV.append("Data;Hora;VA;VB;VC;Status\n");
+                String format = "%s;%s;%.2f;%.2f;%.2f;%s;\n";
+
+                dadosCSVCompleto.append("NS do medidor;" + respostaAbsoluto.getNumeroMedidor() + "\n");
+                dadosCSVCompleto.append("Data/Hora de Início;" + dadosCabecalhoMMSM.textdataInicio + "\n");
+                dadosCSVCompleto.append("Data/Hora de Final;" + dadosCabecalhoMMSM.textdataFim + "\n");
+                dadosCSVCompleto.append("Numero de Registros;" + dadosCabecalhoMMSM.numeroRegistros + "\n");
+                dadosCSVCompleto.append("Numero de Registros Válidos;" + dadosCabecalhoMMSM.numeroRegistrosValidos + "\n");
+                //dadosCSVCompleto.append("Intervalo da memoria SM;" + String.valueOf(dadosCabecalhoMMSM.intevaloQEE) + "\n");
+                dadosCSVCompleto.append("Intervalo da memoria SM;10\n");
+                dadosCSVCompleto.append("Tensão de Referência;" + String.format("%.2f", dadosCabecalhoQEE.tensaoReferencia) + "\n");
+                dadosCSVCompleto.append("Percentual para a tensão precária superior;" + String.format(br, "%.2f", dadosCabecalhoMMSM.percentualTensaoPrecariaSuperior) + "\n");
+                dadosCSVCompleto.append("Percentual para a tensão precária inferior;" + String.format(br, "%.2f", dadosCabecalhoMMSM.percentualTensaoPrecariaInferior) + "\n");
+                dadosCSVCompleto.append("Percentual para a tensão crítica superior;" + String.format(br, "%.2f", dadosCabecalhoMMSM.percentualTensaoCriticaSuperior) + "\n");
+                dadosCSVCompleto.append("Percentual para a tensão crítica inferior;" + String.format(br, "%.2f", dadosCabecalhoMMSM.percentualTensaoCriticaInferior) + "\n");
+                dadosCSVCompleto.append("DRP(%);" + String.format(br, "%.2f", dadosCabecalhoMMSM.DRP) + "\n");
+                dadosCSVCompleto.append("DRC(%);" + String.format(br, "%.2f", dadosCabecalhoMMSM.DRC) + "\n");
+                dadosCSVCompleto.append("DTT95%;" + String.format(br, "%.2f", dadosCabecalhoMMSM.DTT95) + "\n");
+                dadosCSVCompleto.append("FD95%;" + String.format(br, "%.2f", dadosCabecalhoMMSM.FD95) + "\n");
+                dadosCSVCompleto.append("Tipo de Ligação;" + items[dadosCabecalhoMMSM.tipoLigacao] + "\n");
+                dadosCSVCompleto.append("Data;Hora;VA;VB;VC;Desequilíbio;DHTA(%);DHTB(%);DHTC(%);FPA(%);FPB(%);FPC(%);FP3(%);f(Hz);T(°C);VTCDM;VTCDT;Varf;Interrupções;Status\n");
+
+                String formatCompleto = "%s;%s;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%.2f;%d;%d;%d;%d;%s;\n";
+
+
+                Calendar local_date = dadosCabecalhoMMSM.dataInicio;
+                // vou plotar os resultados...
+                DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+                DateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+
+                for (int i = 0; i < processaQEE.mDadosQEE.size(); i++) {
+                    RespostaAbsoluto.DadosQEE dados = processaMMSM.mDadosQEE.get(i);
+                    local_date.add(Calendar.MINUTE, 10);
+                    String data = dateFormat.format(local_date.getTime());
+                    String hora = timeFormat.format(local_date.getTime());
+                    String debug = "###### ITEM: " + i + " > Data: " + data + " " + hora + "\r\n" +
+                            String.format(br, "Eventos......... %d | %d | %d | %d | %d", dados.status, dados.VTCDMomentaneos, dados.VTCDTemporarios, dados.variacoesFrequencia, dados.interrupcoes) + "\r\n" +
+                            String.format(br, "Frequencia...... %d | %.2f", dados.frequencia, (float) dados.frequencia * dadosCabecalhoMMSM.constanteMultiplicacaoFrequencia) + "\r\n" +
+                            String.format(br, "Temperatura..... %d | %.2f", dados.temperatura, (float) dados.temperatura * dadosCabecalhoMMSM.constanteMultiplicacaoTemperatura) + "\r\n" +
+                            String.format(br, "Tensa A......... %d | %.2f", dados.tensaoA, (float) dados.tensaoA * dadosCabecalhoMMSM.constanteMultiplicacaoTensao) + "\r\n" +
+                            String.format(br, "Tensa B......... %d | %.2f", dados.tensaoB, (float) dados.tensaoB * dadosCabecalhoMMSM.constanteMultiplicacaoTensao) + "\r\n" +
+                            String.format(br, "Tensa C......... %d | %.2f", dados.tensaoC, (float) dados.tensaoC * dadosCabecalhoMMSM.constanteMultiplicacaoTensao) + "\r\n" +
+                            String.format(br, "Desequilibrio... %d | %.2f", dados.desequilibrio, (float) dados.desequilibrio * dadosCabecalhoMMSM.constanteMultiplicacaoDesequilibrio) + "\r\n" +
+                            String.format(br, "DHTA............ %d | %.2f", dados.DHTA, (float) dados.DHTA * dadosCabecalhoMMSM.constanteMultiplicacaoHarmonicas) + "\r\n" +
+                            String.format(br, "DHTB............ %d | %.2f", dados.DHTB, (float) dados.DHTB * dadosCabecalhoMMSM.constanteMultiplicacaoHarmonicas) + "\r\n" +
+                            String.format(br, "DHTC............ %d | %.2f", dados.DHTC, (float) dados.DHTC * dadosCabecalhoMMSM.constanteMultiplicacaoHarmonicas) + "\r\n" +
+                            String.format(br, "Fat. PotA....... %d | %.2f", dados.fatPotenciaA, (float) dados.fatPotenciaA * dadosCabecalhoMMSM.constanteMultiplicacaoFatorPotencia) + "\r\n" +
+                            String.format(br, "Fat. PotB....... %d | %.2f", dados.fatPotenciaA, (float) dados.fatPotenciaA * dadosCabecalhoMMSM.constanteMultiplicacaoFatorPotencia) + "\r\n" +
+                            String.format(br, "Fat. PotC....... %d | %.2f", dados.fatPotenciaA, (float) dados.fatPotenciaA * dadosCabecalhoMMSM.constanteMultiplicacaoFatorPotencia) + "\r\n" +
+                            String.format(br, "Fat. Pot.Trif... %d | %.2f", dados.fatPotenciaTrifasico, (float) dados.fatPotenciaTrifasico * dadosCabecalhoMMSM.constanteMultiplicacaoFatorPotencia);
+
+                    Log.i(TAG, debug);
+
+                    String status = (dados.status > 0) ? "Inválido" : "Válido";
+                    dadosCSV.append(
+                            String.format(format, data, hora,
+                                    (float) dados.tensaoA * dadosCabecalhoMMSM.constanteMultiplicacaoTensao,
+                                    (float) dados.tensaoB * dadosCabecalhoMMSM.constanteMultiplicacaoTensao,
+                                    (float) dados.tensaoC * dadosCabecalhoMMSM.constanteMultiplicacaoTensao,
+                                    status));
+                    dadosCSVCompleto.append(
+                            String.format(formatCompleto, data, hora,
+                                    (float) dados.tensaoA * dadosCabecalhoMMSM.constanteMultiplicacaoTensao,
+                                    (float) dados.tensaoB * dadosCabecalhoMMSM.constanteMultiplicacaoTensao,
+                                    (float) dados.tensaoC * dadosCabecalhoMMSM.constanteMultiplicacaoTensao,
+                                    (float) dados.desequilibrio * dadosCabecalhoMMSM.constanteMultiplicacaoDesequilibrio,
+                                    (float) dados.DHTA * dadosCabecalhoMMSM.constanteMultiplicacaoHarmonicas,
+                                    (float) dados.DHTB * dadosCabecalhoMMSM.constanteMultiplicacaoHarmonicas,
+                                    (float) dados.DHTC * dadosCabecalhoMMSM.constanteMultiplicacaoHarmonicas,
+                                    (float) dados.fatPotenciaA * dadosCabecalhoMMSM.constanteMultiplicacaoFatorPotencia,
+                                    (float) dados.fatPotenciaB * dadosCabecalhoMMSM.constanteMultiplicacaoFatorPotencia,
+                                    (float) dados.fatPotenciaC * dadosCabecalhoMMSM.constanteMultiplicacaoFatorPotencia,
+                                    (float) dados.fatPotenciaTrifasico * dadosCabecalhoMMSM.constanteMultiplicacaoFatorPotencia,
+                                    (float) dados.frequencia * dadosCabecalhoMMSM.constanteMultiplicacaoFrequencia,
+                                    (float) dados.temperatura * dadosCabecalhoMMSM.constanteMultiplicacaoTemperatura,
+                                    dados.VTCDMomentaneos,
+                                    dados.VTCDTemporarios,
+                                    dados.variacoesFrequencia,
+                                    dados.interrupcoes,
+                                    status));
+                }
+
+                String nomeArquivo = String.format("MemoriaQEETensao_%s_%s_%s.csv", respostaAbsoluto.getNumeroMedidor(), mDeviceName.substring(4).trim(),
+                        new SimpleDateFormat("ddMMyyyy'_'HHmmss").format(Calendar.getInstance().getTime()));
+
+                String nomeArquivoCompleto = String.format("MemoriaQEE_%s_%s_%s.csv", respostaAbsoluto.getNumeroMedidor(), mDeviceName.substring(4).trim(),
+                        new SimpleDateFormat("ddMMyyyy'_'HHmmss").format(Calendar.getInstance().getTime()));
+
+                if (!Arquivo.salvarArquivo(this, nomeArquivo, dadosCSV.toString())) {
+                    Toast.makeText(this, "Erro ao salvar arquivo da memória QEE",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Arquivo de QEE salvo com sucesso:\n" + nomeArquivo,
+                            Toast.LENGTH_LONG).show();
+                }
+
+                if (!Arquivo.salvarArquivo(this, nomeArquivoCompleto, dadosCSVCompleto.toString())) {
+                    Toast.makeText(this, "Erro ao salvar arquivo completo da memória QEE",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+
+                }
+
+                progressDialog.hide();
+                progressDialog.dismiss();
+                mHandler.removeCallbacksAndMessages(null);
+            }
+            //dadosAbnt51 = respostaAbsoluto.interpretaResposta51();
+        }
+    }
+
     private void enviarQEEParametrizacao(RespostaAbsoluto respostaAbsoluto, String
             numeroMedidor) {
 
@@ -1648,7 +2648,7 @@ public class DeviceActivity extends AppCompatActivity
         RespostaAbsoluto respostaComposta = new RespostaAbsoluto(mRespostaComposta);
         medidores = respostaComposta.listaMedidores();
 
-        enviarLeituraConfiguracao();
+        enviarLeituraConfiguracao(tipo_medidor);
     }
 
     private void animateRefresh() {
@@ -1678,12 +2678,12 @@ public class DeviceActivity extends AppCompatActivity
 
     private void enviaComando52(byte pacote) {
         String num_medidor = "";
-        if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+        if (tipo_medidor == TipoMedidor.ABSOLUTO) {
             num_medidor = medidorSelecionado.numero;
         }
         byte[] comando = new ComandoAbsoluto.ABNT52()
                 .comMedidorNumero(num_medidor)
-                .build(pacote, (tipo_medidor == TipoMedidor.ABOSOLUTO));
+                .build(pacote, (tipo_medidor == TipoMedidor.ABSOLUTO));
         enviarComando(comando);
     }
 
@@ -1760,7 +2760,7 @@ public class DeviceActivity extends AppCompatActivity
             }
             SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             StringBuilder dadosCSV = new StringBuilder();
-            if (tipo_medidor != TipoMedidor.ABOSOLUTO) {
+            if (tipo_medidor != TipoMedidor.ABSOLUTO) {
                 dadosCSV.append("Ponto;" + mDeviceName.substring(4) + "\n");
                 dadosCSV.append("NS do medidor;" + respostaAbsoluto.getNumeroMedidor() + "\n");
             } else {
@@ -1857,7 +2857,7 @@ public class DeviceActivity extends AppCompatActivity
 
             String nomeArquivo = String.format("MemoriaMassa%s_%s_%s_%s.csv", strCanal, respostaAbsoluto.getNumeroMedidor(), mDeviceName.substring(4).trim(), new SimpleDateFormat("ddMMyyyy'_'HHmmss").format(Calendar.getInstance().getTime()));
 
-            if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+            if (tipo_medidor == TipoMedidor.ABSOLUTO) {
                 nomeArquivo = String.format("MemoriaMassa%s_%s_%s_%s.csv", strCanal, medidorSelecionado.numero, medidorSelecionado.unidadeConsumidora /*mDeviceName.substring(4).trim()*/,
                         new SimpleDateFormat("ddMMyyyy'_'HHmmss").format(Calendar.getInstance().getTime()));
             }
@@ -1925,16 +2925,16 @@ public class DeviceActivity extends AppCompatActivity
         dataMedidor = String.format("%02X/%02X/20%02X %02X:%02X:%02X",
                 data[8], data[9], data[10], data[5], data[6], data[7]);
 
-        if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+        if (tipo_medidor == TipoMedidor.ABSOLUTO) {
             versaoMedidor = String.format("%02X.%02X", data[30], data[31]);
         } else {
             versaoMedidor = String.format("%02X.%02X", data[147], data[148]);
         }
         modeloMultiponto = String.format("%02X%02X", data[152], data[153]);
 
-        tipoModulo = String.format("%02X", data[38]);
-        estadoModulo = String.format("%02X", data[39]);
-        sinalModulo = String.valueOf(data[40]);
+        tipoModulo = String.format("%02X", data[37]);
+        estadoModulo = String.format("%02X", data[38]);
+        sinalModulo = String.valueOf(data[39]);
         switch (tipoModulo) {
             case "01":
                 tipoModulo = "Star Measure";
@@ -1964,13 +2964,13 @@ public class DeviceActivity extends AppCompatActivity
                 tipoModulo = "";
                 break;
         }
-        estadoModulo = String.format("%02X", data[39]);
+        //estadoModulo = String.format("%02X", data[38]);
         if (estadoModulo.equals("01")) {
             estadoModulo = "Conectado";
         } else {
-            estadoModulo = "Desconectado/Não informado";
+            estadoModulo = "Desconectado";
         }
-        sinalModulo = String.format("%02X", data[40]);
+        //sinalModulo = String.format("%02X", data[40]);
 
         Log.d(TAG, "\nProcessa ABNT 21 Absoluto { \nData: " + dataMedidor + "\nVersão Medidor: " + versaoMedidor + "\nModelo multiponto: " + modeloMultiponto + "}");
         enviarLeituraParametrosHospedeiro();
@@ -2034,7 +3034,7 @@ public class DeviceActivity extends AppCompatActivity
         sinalModulo = String.valueOf(data[39]);
 
         Log.d(TAG, "\nProcessa ABNT 21 Easy { \nData: " + dataMedidor + "\nVersão Medidor: " + versaoMedidor + "\nModelo multiponto: " + modeloMultiponto + "}");
-        enviarLeituraConfiguracao();
+        enviarLeituraConfiguracao(tipo_medidor);
     }
 
     private void atualizarStatusMedidor(MedidorAbsoluto
@@ -2141,7 +3141,7 @@ public class DeviceActivity extends AppCompatActivity
         byte[] comando = new ComandoAbsoluto.AB06AlteracaoCorteReligamento()
                 .comMedidorNumero(numeroMedidor)
                 .efetuaCorte()
-                .build((tipo_medidor == TipoMedidor.ABOSOLUTO));
+                .build((tipo_medidor == TipoMedidor.ABSOLUTO));
         enviarComando(comando);
     }
 
@@ -2149,7 +3149,7 @@ public class DeviceActivity extends AppCompatActivity
         byte[] comando = new ComandoAbsoluto.AB06AlteracaoCorteReligamento()
                 .comMedidorNumero(numeroMedidor)
                 .efetuaReligamento()
-                .build((tipo_medidor == TipoMedidor.ABOSOLUTO));
+                .build((tipo_medidor == TipoMedidor.ABSOLUTO));
         enviarComando(comando);
     }
 
@@ -2164,7 +3164,7 @@ public class DeviceActivity extends AppCompatActivity
         final byte[] comando = new ComandoAbsoluto.LimpezaOcorrenciasMedidor()
                 .comMedidorNumero(numeroMedidor)
                 .comCodigoOcorrencia(codigoOcorrencia)
-                .build((tipo_medidor == TipoMedidor.ABOSOLUTO));
+                .build((tipo_medidor == TipoMedidor.ABSOLUTO));
         enviarComando(comando);
     }
 
@@ -2196,6 +3196,7 @@ public class DeviceActivity extends AppCompatActivity
             extends RecyclerView.Adapter<MeterListAdapter.MeterViewHolder> {
 
         private List<MedidorAbsoluto> medidores;
+        private String data_hora = "";
 
         public void atualizarDados(List<MedidorAbsoluto> medidores) {
             this.medidores = medidores;
@@ -2216,10 +3217,22 @@ public class DeviceActivity extends AppCompatActivity
             TextView unidadeConsumidora;
             TextView medidorInfo;
             TextView medidor;
-            TextView versaoInfo;
+            TextView dataHora;
+            TextView dataHoraInfo;
             TextView versao;
+            TextView versaoInfo;
             TextView fases;
+            //TextView versaoInfo;
+            //TextView versao;
+            //TextView fases;
+            TextView moduloNomeTitulo;
+            TextView moduloNome;
+            TextView moduloEstadoTitulo;
+            TextView moduloEstado;
+            TextView moduloSinalTitulo;
+            TextView moduloSinal;
             ImageView statusMedidor;
+            //ImageView statusMedidor;
 
             public MeterViewHolder(@NonNull View view) {
                 super(view);
@@ -2227,11 +3240,31 @@ public class DeviceActivity extends AppCompatActivity
                 unidadeConsumidoraInfo = view.findViewById(R.id.unidade_consumidora_info);
                 medidor = view.findViewById(R.id.dados_medidor);
                 medidorInfo = view.findViewById(R.id.dados_medidor_info);
+                dataHora = view.findViewById(R.id.dados_medidor);
+                dataHoraInfo = view.findViewById(R.id.dados_medidor_info);
                 versao = view.findViewById(R.id.medidor_versao);
                 versaoInfo = view.findViewById(R.id.medidor_versao_info);
                 fases = view.findViewById(R.id.numero_fases_medidor);
-                unidadeConsumidora.setOnClickListener(incidenteClick);
+                //fases.setVisibility(LinearLayout.GONE);
                 statusMedidor = view.findViewById(R.id.status_medidor);
+                //statusMedidor.setVisibility(LinearLayout.GONE);
+                unidadeConsumidora.setOnClickListener(incidenteClick);
+                view.findViewById(R.id.incidente_medidor).setOnClickListener(incidenteClick);
+                unidadeConsumidora.setOnClickListener(incidenteClick);
+                moduloNome = view.findViewById(R.id.mi_tv_modulo_nome);
+                moduloNomeTitulo = view.findViewById(R.id.mi_tv_modulo_nome_title);
+                moduloEstado = view.findViewById(R.id.mi_tv_modulo_estado);
+                moduloEstadoTitulo = view.findViewById(R.id.mi_tv_modulo_estado_title);
+                moduloSinal = view.findViewById(R.id.mi_tv_modulo_sinal);
+                moduloSinalTitulo = view.findViewById(R.id.mi_tv_modulo_sinal_title);
+
+
+
+                //versao = view.findViewById(R.id.medidor_versao);
+                //versaoInfo = view.findViewById(R.id.medidor_versao_info);
+                //fases = view.findViewById(R.id.numero_fases_medidor);
+                //unidadeConsumidora.setOnClickListener(incidenteClick);
+                //statusMedidor = view.findViewById(R.id.status_medidor);
                 view.findViewById(R.id.incidente_medidor).setOnClickListener(incidenteClick);
             }
         }
@@ -2261,21 +3294,59 @@ public class DeviceActivity extends AppCompatActivity
             int status = medidor.status;
 
             if (str_medidor.equalsIgnoreCase("000000000")) {
-                meterViewHolder.unidadeConsumidoraInfo.setVisibility(LinearLayout.GONE);
-                meterViewHolder.unidadeConsumidora.setTextColor(getResources().getColor(R.color.starmeasure_turquoise));
+                //meterViewHolder.unidadeConsumidoraInfo.setVisibility(LinearLayout.GONE);
+                meterViewHolder.unidadeConsumidoraInfo.setText("Medidor Hospedeiro:");
+                //meterViewHolder.unidadeConsumidora.setTextColor(getResources().getColor(R.color.starmeasure_turquoise));
+                meterViewHolder.dataHoraInfo.setText("Data e Hora:");
+                meterViewHolder.dataHora.setText(dataMedidor);
                 meterViewHolder.versaoInfo.setVisibility(LinearLayout.VISIBLE);
                 meterViewHolder.versao.setVisibility(LinearLayout.VISIBLE);
                 meterViewHolder.versao.setText(versaoMedidor);
-                str_medidor = "Medidor Hospedeiro";
+                if (!tipoModulo.isEmpty()) {
+                    meterViewHolder.moduloNomeTitulo.setVisibility(View.VISIBLE);
+                    meterViewHolder.moduloNome.setVisibility(View.VISIBLE);
+                    meterViewHolder.moduloEstado.setVisibility(View.VISIBLE);
+                    meterViewHolder.moduloEstadoTitulo.setVisibility(View.VISIBLE);
+                    meterViewHolder.moduloSinal.setVisibility(View.VISIBLE);
+                    meterViewHolder.moduloSinalTitulo.setVisibility(View.VISIBLE);
+
+                    meterViewHolder.moduloNome.setText(tipoModulo);
+                    meterViewHolder.moduloEstado.setText(estadoModulo);
+                    meterViewHolder.moduloSinal.setText(sinalModulo+" dBm");
+                }
+
+
+                SimpleDateFormat smf = new SimpleDateFormat("dd/MM/yyyy' 'HH:mm:ss");
+                Date dt = new Date();
+                try {
+                    dt = smf.parse(dataMedidor);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                long diff = System.currentTimeMillis() - dt.getTime();
+                long seconds = diff / 1000;
+
+                if (seconds < 0) {
+                    seconds *= -1;
+                }
+
+                if (seconds > 300) {
+                    meterViewHolder.dataHora.setTextColor(Color.RED);
+                }
+
+                //str_medidor = "Medidor Hospedeiro " + medidor.numero.substring(0, 8);
+                str_medidor = medidor.numero.substring(0, 8);
                 str_fases = "";
                 status = -1;
             } else {
                 meterViewHolder.versao.setVisibility(LinearLayout.GONE);
                 meterViewHolder.versaoInfo.setVisibility(LinearLayout.GONE);
+                meterViewHolder.medidor.setText(medidor.numero);
             }
 
             meterViewHolder.unidadeConsumidora.setText(String.format(formato, str_medidor));
-            meterViewHolder.medidor.setText(medidor.numero);
+
 
             switch (status) {
                 case 0x00:
@@ -2306,12 +3377,13 @@ public class DeviceActivity extends AppCompatActivity
         MenuItem item_corte_religa = popup.getMenu().findItem(R.id.menu_corte_religa);
         MenuItem item_qee = popup.getMenu().findItem(R.id.menu_qee);
         MenuItem item_monitoramento = popup.getMenu().findItem(R.id.menu_monitoramento);
+        MenuItem item_configuracao_nic = popup.getMenu().findItem(R.id.menu_configuracao_nic);
         MenuItem item_registradores = popup.getMenu().findItem(R.id.menu_leitura_registradores);
         MenuItem item_reset_registradores = popup.getMenu().findItem(R.id.menu_reset_registradores);
         MenuItem item_modo_teste = popup.getMenu().findItem(R.id.menu_modo_test);
         item_qee.setVisible(false);
 
-        if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+        if (tipo_medidor == TipoMedidor.ABSOLUTO) {
             if (item_corte_religa != null) {
                 if (medidorSelecionado.status == 0x00)
                     item_corte_religa.setTitle(getString(R.string.text_religa));
@@ -2340,6 +3412,7 @@ public class DeviceActivity extends AppCompatActivity
             item_qee.setVisible(true);
             item_monitoramento.setVisible(true);
             item_modo_teste.setVisible(true);
+            item_configuracao_nic.setVisible(true);
         } else {
             item_corte_religa.setVisible(false);
         }
@@ -2363,7 +3436,7 @@ public class DeviceActivity extends AppCompatActivity
                 break;
             case R.id.menu_data_hora:
                 funcaoEmExecucao = TipoOperacao.DataHora;
-                if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+                if (tipo_medidor == TipoMedidor.ABSOLUTO) {
                     enviarAberturaSessao(medidorSelecionado.numero);
                 } else {
                     ajustaDataHora(true, medidorSelecionado);
@@ -2378,16 +3451,16 @@ public class DeviceActivity extends AppCompatActivity
                 iniciaMemoriaMassa(medidorSelecionado);
                 break;
             case R.id.menu_memoria_massa_sm:
-                funcaoEmExecucao = TipoOperacao.MemoriaMassa;
-                iniciaMemoriaMassa(medidorSelecionado);
+                funcaoEmExecucao = TipoOperacao.InicioMemoriaMassaSM;
+                iniciaMemoriaMassaSM();
                 break;
             case R.id.menu_memoria_massa_intervalo:
                 funcaoEmExecucao = TipoOperacao.IntervaloMM;
                 iniciaAlteracaoIntervaloMM(medidorSelecionado);
                 break;
             case R.id.menu_memoria_massa_reset:
-                funcaoEmExecucao = TipoOperacao.MemoriaMassa;
-                iniciaMemoriaMassa(medidorSelecionado);
+                funcaoEmExecucao = TipoOperacao.ResetRegistradores;
+                resetRegistradores(medidorSelecionado, (byte) 2);
                 break;
             case R.id.menu_reset_registradores:
                 funcaoEmExecucao = TipoOperacao.ResetRegistradores;
@@ -2412,6 +3485,10 @@ public class DeviceActivity extends AppCompatActivity
             case R.id.menu_monitoramento:
                 funcaoEmExecucao = TipoOperacao.MonitoramentoDeTransformador;
                 iniciaMonitoramento();
+                break;
+            case R.id.menu_configuracao_nic:
+                funcaoEmExecucao = TipoOperacao.ConfiguracaoNIC;
+                iniciaConfiguracaoNIC();
                 break;
             case R.id.menu_modo_test:
                 funcaoEmExecucao = TipoOperacao.ModoTeste;
@@ -2536,6 +3613,11 @@ public class DeviceActivity extends AppCompatActivity
         }
     }
 
+    private void iniciaConfiguracaoNIC() {
+        createDialogConfiguracaoNIC();
+        enviaComandoEB17((byte) 0);
+    }
+
     private void iniciaMonitoramento() {
         showProgressBar("Buscando dados do medidor");
         codigoCanal = 0;
@@ -2638,6 +3720,47 @@ public class DeviceActivity extends AppCompatActivity
         alertDialog.show();
     }
 
+    private void iniciaMemoriaMassaSM() {
+        final View conf_mmsm = getLayoutInflater().inflate(R.layout.conf_mmsm, null);
+        final EditText nome = conf_mmsm.findViewById(R.id.numero_dias);
+        nome.setFilters(new InputFilter[]{new MinMaxFilter("0", "99")});
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this,
+                android.R.style.Theme_Material_Dialog_Alert);
+        AlertDialog alertDialog = builder
+                .setTitle("Memória de Massa SM")
+                .setMessage("Informe o número de dias a ser lido")
+                .setView(conf_mmsm)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (nome.getText().toString().isEmpty()) {
+                            nome.setText("0");
+                        }
+                        int dias = Integer.valueOf(nome.getText().toString());
+                        IntervaloDiasMMSM = dias;
+                        enviaComandoAB52((byte) 0x00, (byte) 0x05, dias);
+                        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+                        if (imm != null)
+                            imm.hideSoftInputFromWindow(conf_mmsm.getWindowToken(), 0);
+                    }
+                })
+                .setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
+                        if (imm != null)
+                            imm.hideSoftInputFromWindow(conf_mmsm.getWindowToken(), 0);
+                        // do nothing
+                    }
+                }).create();
+
+
+        alertDialog.getWindow().setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+        alertDialog.show();
+    }
+
     private void buscaQEEParametros() {
         codigoCanal = 0;
         enviaComandoEB11((byte) 0x00);
@@ -2645,7 +3768,7 @@ public class DeviceActivity extends AppCompatActivity
 
     private void enviaComandoEB11(byte pacote) {
         String num_medidor = "";
-        if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+        if (tipo_medidor == TipoMedidor.ABSOLUTO) {
             num_medidor = medidorSelecionado.numero;
         }
 
@@ -2656,6 +3779,31 @@ public class DeviceActivity extends AppCompatActivity
 
     }
 
+    private void enviaComandoEB17(byte tipo_comando) {
+        String num_medidor = "";
+        if (tipo_medidor == TipoMedidor.ABSOLUTO) {
+            num_medidor = medidorSelecionado.numero;
+        }
+
+        byte[] comando = new ComandoAbsoluto.EB17_2()
+                .comMedidorNumero(num_medidor)
+                .build(tipo_comando);
+        enviarComando(comando);
+
+    }
+
+    private void enviaComandoAB52(byte pacote, byte TipoLeitura, int Intervalo) {
+        String num_medidor = "";
+        if (tipo_medidor == TipoMedidor.ABSOLUTO) {
+            num_medidor = medidorSelecionado.numero;
+        }
+
+        byte[] comando = new ComandoAbsoluto.AB52()
+                .comMedidorNumero(num_medidor)
+                .build(pacote, TipoLeitura, Intervalo);
+        enviarComando(comando);
+
+    }
     private void iniciaMemoriaMassa(MedidorAbsoluto medidor) {
         final View conf_mm = getLayoutInflater().inflate(R.layout.conf_mm, null);
         final EditText nome = conf_mm.findViewById(R.id.numero_dias);
@@ -2690,12 +3838,12 @@ public class DeviceActivity extends AppCompatActivity
                         codigoCanal = canal.getSelectedItemPosition();
                         if (dias >= 0) {
                             String num_medidor = "";
-                            if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+                            if (tipo_medidor == TipoMedidor.ABSOLUTO) {
                                 num_medidor = medidorSelecionado.numero;
                             }
                             byte[] comando = new ComandoAbsoluto.ABNT51()
                                     .comMedidorNumero(num_medidor)
-                                    .build(dias, codigoCanal, (tipo_medidor == TipoMedidor.ABOSOLUTO));
+                                    .build(dias, codigoCanal, (tipo_medidor == TipoMedidor.ABSOLUTO));
                             enviarComando(comando);
                             InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                             if (imm != null)
@@ -2744,7 +3892,7 @@ public class DeviceActivity extends AppCompatActivity
                         String num_medidor = "";
                         int MinutosMM = 1;
 
-                        if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+                        if (tipo_medidor == TipoMedidor.ABSOLUTO) {
                             num_medidor = medidorSelecionado.numero;
                         }
 
@@ -2767,7 +3915,7 @@ public class DeviceActivity extends AppCompatActivity
                         leuEasyTrafo = false;
                         byte[] comando = new ComandoAbsoluto.ABNT73()
                                 .comMedidorNumero(num_medidor)
-                                .build(MinutosMM, (tipo_medidor == TipoMedidor.ABOSOLUTO));
+                                .build(MinutosMM, (tipo_medidor == TipoMedidor.ABSOLUTO));
                         enviarComando(comando);
                         InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                         if (imm != null)
@@ -2794,17 +3942,17 @@ public class DeviceActivity extends AppCompatActivity
         byte[] comando;
         Calendar localCalendar = Calendar.getInstance();
         String num_medidor = "";
-        if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+        if (tipo_medidor == TipoMedidor.ABSOLUTO) {
             num_medidor = medidor.numero;
         }
         if (data) {
             comando = new ComandoAbsoluto.ABNT29()
                     .comMedidorNumero(num_medidor)
-                    .build(localCalendar, (tipo_medidor == TipoMedidor.ABOSOLUTO));
+                    .build(localCalendar, (tipo_medidor == TipoMedidor.ABSOLUTO));
         } else {
             comando = new ComandoAbsoluto.ABNT30()
                     .comMedidorNumero(num_medidor)
-                    .build(localCalendar, (tipo_medidor == TipoMedidor.ABOSOLUTO));
+                    .build(localCalendar, (tipo_medidor == TipoMedidor.ABSOLUTO));
         }
         enviarComando(comando);
     }
@@ -2812,14 +3960,14 @@ public class DeviceActivity extends AppCompatActivity
     private void alteracaoIntrvaloMM(MedidorAbsoluto medidor, byte Minutos) {
         byte[] comando = new ComandoAbsoluto.ABNT73()
                 .comMedidorNumero(medidor.numero)
-                .build(Minutos, (tipo_medidor == TipoMedidor.ABOSOLUTO));
+                .build(Minutos, (tipo_medidor == TipoMedidor.ABSOLUTO));
         enviarComando(comando);
     }
 
     private void exibirLeituraParametros(MedidorAbsoluto medidor) {
         String numero = "";
         String unidadeConsumidora = "";
-        if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+        if (tipo_medidor == TipoMedidor.ABSOLUTO) {
             numero = medidor.numero;
             unidadeConsumidora = medidor.unidadeConsumidora;
         } else {
@@ -2831,7 +3979,7 @@ public class DeviceActivity extends AppCompatActivity
         intent.putExtra(Consts.EXTRAS_NUMERO_MEDIDOR, numero);
         intent.putExtra(Consts.EXTRAS_UNIDADE_CONSUMIDORA, unidadeConsumidora);
         intent.putExtra(Consts.EXTRAS_DEVICE_NAME, mDeviceName);
-        intent.putExtra(Consts.EXTRAS_EASY_TRAFO, (tipo_medidor != TipoMedidor.ABOSOLUTO));
+        intent.putExtra(Consts.EXTRAS_EASY_TRAFO, (tipo_medidor != TipoMedidor.ABSOLUTO));
         intent.putExtra(Consts.EXTRAS_IS_SMFISCAL, strSMFiscal);
 
         startActivity(intent);
@@ -2840,7 +3988,7 @@ public class DeviceActivity extends AppCompatActivity
     private void exibirGrandezasInstantaneas(MedidorAbsoluto medidor) {
         String numero = "";
         String unidadeConsumidora = "";
-        if (tipo_medidor == TipoMedidor.ABOSOLUTO) {
+        if (tipo_medidor == TipoMedidor.ABSOLUTO) {
             numero = medidor.numero;
             unidadeConsumidora = medidor.unidadeConsumidora;
         } else {
@@ -2852,7 +4000,7 @@ public class DeviceActivity extends AppCompatActivity
         intent.putExtra(Consts.EXTRAS_NUMERO_MEDIDOR, numero);
         intent.putExtra(Consts.EXTRAS_UNIDADE_CONSUMIDORA, unidadeConsumidora);
         intent.putExtra(Consts.EXTRAS_DEVICE_NAME, mDeviceName);
-        intent.putExtra(Consts.EXTRAS_EASY_TRAFO, (tipo_medidor != TipoMedidor.ABOSOLUTO));
+        intent.putExtra(Consts.EXTRAS_EASY_TRAFO, (tipo_medidor != TipoMedidor.ABSOLUTO));
         startActivity(intent);
     }
 
@@ -2873,7 +4021,7 @@ public class DeviceActivity extends AppCompatActivity
                         if (!novo_nome.trim().isEmpty()) {
                             byte[] comando = new ComandoAbsoluto.ABNT87()
                                     .comMedidorNumero(medidor.numero)
-                                    .build(novo_nome, (tipo_medidor == TipoMedidor.ABOSOLUTO));
+                                    .build(novo_nome, (tipo_medidor == TipoMedidor.ABSOLUTO));
                             enviarComando(comando);
                             InputMethodManager imm = (InputMethodManager) getSystemService(Activity.INPUT_METHOD_SERVICE);
                             if (imm != null)
@@ -2902,7 +4050,11 @@ public class DeviceActivity extends AppCompatActivity
     private void resetRegistradores(MedidorAbsoluto medidor, byte tipo) {
         String titulo = "Reset de Registradores";
         String msg = "Você deseja realmente realizar o reset dos registradores?\r\nEsta operação é irreversível!";
-        if (tipo == 3) {
+        if (tipo == 2) {
+            msg = "Você deseja realmente realizar o reset dos registradores de Memória de Massa?\r\nEsta operação é irreversível!";
+            titulo = "Reset Memória de Massa";
+        }
+        else if (tipo == 3) {
             msg = "Você deseja realmente realizar o reset dos registradores de QEE?\r\nEsta operação é irreversível!";
             titulo = "Reset QEE";
         }
@@ -2915,7 +4067,7 @@ public class DeviceActivity extends AppCompatActivity
 
                     byte[] comando = new ComandoAbsoluto.AB07ResetRegistradores()
                             .comMedidorNumero(medidor.numero)
-                            .build((tipo_medidor == TipoMedidor.ABOSOLUTO), tipo);
+                            .build((tipo_medidor == TipoMedidor.ABSOLUTO), tipo);
                     enviarComando(comando);
 
                     if (comando != null) {

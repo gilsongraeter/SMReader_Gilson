@@ -15,6 +15,7 @@ public class ProtocoloAbsoluto {
     static final byte ResetRegistradores = 0x07;
     static final byte MemoriaMassaQEE = 0x11;
     static final byte AB08 = 0x08;
+    static final byte EB17 = (byte) 0x17;
     static final byte EB90 = (byte) 0x90;
     static final byte EB92 = (byte) 0x92;
 

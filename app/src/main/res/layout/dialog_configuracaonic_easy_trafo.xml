@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="@style/container"
+    android:layout_width="300dp"
+    android:layout_height="450dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        style="@style/container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardView3"
+            style="@style/container.title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                style="@style/container.title"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageButton
+                    android:id="@+id/configuracaonic_btn_close"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@color/transparent"
+                    android:contentDescription="close"
+                    android:src="@drawable/close_white"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <TextView
+                    android:id="@+id/configuracaonic_tv_title"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="Configuração da NIC"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toStartOf="@+id/configuracaonic_loading"
+                    app:layout_constraintStart_toEndOf="@+id/configuracaonic_btn_close"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <ProgressBar
+                    android:id="@+id/configuracaonic_loading"
+                    style="?android:attr/progressBarStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="0dp"
+                    android:layout_marginEnd="8dp"
+                    android:indeterminate="true"
+                    android:indeterminateTint="@color/white"
+                    android:visibility="invisible"
+                    app:layout_constraintBottom_toBottomOf="@+id/configuracaonic_tv_title"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="@+id/configuracaonic_tv_title" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+        <Button
+            android:id="@+id/configuracaonic_btn_forca_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_monitoramento"
+            android:text="Força 1"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/configuracaonic_btn_forca_2"
+            app:layout_constraintTop_toBottomOf="@+id/cardView3"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <Button
+            android:id="@+id/configuracaonic_btn_forca_2"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:background="@drawable/button_monitoramento"
+            android:text="Força 2"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/configuracaonic_btn_forca_1"
+            app:layout_constraintTop_toBottomOf="@+id/cardView3"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <Button
+            android:id="@+id/configuracaonic_enviar_alteracao"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="Enviar alteração"
+            android:background="@drawable/button_monitoramento_enviar"
+            android:padding="8dp"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <ScrollView
+            android:layout_width="303dp"
+            android:layout_height="352dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintBottom_toTopOf="@+id/configuracaonic_enviar_alteracao"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cardView3">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tv_titulo_deteccao_falha"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:text="Detecção de Falhas"
+                    android:textColor="@color/starmeasure_turquoise"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <CheckBox
+                    android:id="@+id/cb_configuracaonic_telefone1_check"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:enabled="true"
+                    android:text="Tel.1"
+                    android:textColor="@color/starmeasure_turquoise"
+                    android:textSize="18sp"
+                    android:textStyle="normal"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_titulo_deteccao_falha"
+                    app:layout_constraintVertical_bias="0.0" />
+
+
+                <CheckBox
+                    android:id="@+id/cb_configuracaonic_telefone2_check"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="-5dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:clickable="true"
+                    android:enabled="true"
+                    android:text="Tel.2"
+                    android:textColor="@color/starmeasure_turquoise"
+                    android:textSize="18sp"
+                    android:textStyle="normal"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cb_configuracaonic_telefone1_check"
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <CheckBox
+                    android:id="@+id/cb_configuracaonic_telefone3_check"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:clickable="true"
+                    android:enabled="true"
+                    android:text="Tel.3"
+                    android:textColor="@color/starmeasure_turquoise"
+                    android:textSize="18sp"
+                    android:textStyle="normal"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cb_configuracaonic_telefone2_check"
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <CheckBox
+                    android:id="@+id/cb_configuracaonic_telefone4_check"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:clickable="true"
+                    android:enabled="true"
+                    android:text="Tel.4"
+                    android:textColor="@color/starmeasure_turquoise"
+                    android:textSize="18sp"
+                    android:textStyle="normal"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cb_configuracaonic_telefone3_check"
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <TextView
+                    android:id="@+id/tv_titulo_ciclos"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:enabled="false"
+                    android:text="Configuração Ciclos de Ligações"
+                    android:textColor="@color/starmeasure_turquoise"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/cb_configuracaonic_telefone4_check"
+                    app:layout_constraintVertical_bias="0.0" />
+
+                <RadioGroup
+                    android:id="@+id/rg_config_ciclos"
+                    android:layout_width="140dp"
+                    android:layout_height="140dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@color/backgroundLight"
+                    android:enabled="false"
+                    android:text=""
+                    android:textColor="@color/starmeasure_turquoise"
+                    android:textStyle="bold"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_titulo_ciclos"
+                    app:layout_constraintVertical_bias="0.0">
+
+                    <CheckBox
+                        android:id="@+id/cb_falta_energia"
+                        android:layout_width="match_parent"
+                        android:layout_height="35dp"
+                        android:text="Falta Energia"
+                        android:textColor="@color/starmeasure_turquoise"
+                        android:textSize="18sp" />
+
+                    <CheckBox
+                        android:id="@+id/cb_abertura_tampa"
+                        android:layout_width="match_parent"
+                        android:layout_height="35dp"
+                        android:text="Ab. Tampa"
+                        android:textColor="@color/starmeasure_turquoise"
+                        android:textSize="18sp" />
+
+                    <CheckBox
+                        android:id="@+id/cb_subtensao_ciclos"
+                        android:layout_width="match_parent"
+                        android:layout_height="35dp"
+                        android:text="Subtensão"
+                        android:textColor="@color/starmeasure_turquoise"
+                        android:textSize="18sp" />
+
+                    <CheckBox
+                        android:id="@+id/cb_sobretensao_ciclos"
+                        android:layout_width="match_parent"
+                        android:layout_height="35dp"
+                        android:text="Sobretensão"
+                        android:textColor="@color/starmeasure_turquoise"
+                        android:textSize="18sp" />
+                </RadioGroup>
+
+                <RadioGroup
+                    android:id="@+id/rg_etapa_ciclos"
+                    android:layout_width="140dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="4dp"
+                    android:background="@color/backgroundLight"
+                    app:layout_constraintStart_toEndOf="@+id/rg_config_ciclos"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_titulo_ciclos"
+                    tools:layout_editor_absoluteY="171dp">
+
+                    <RadioButton
+                        android:id="@+id/rb_ciclo_padrao"
+                        android:layout_width="match_parent"
+                        android:layout_height="27dp"
+                        android:text="Ciclo Padrão"
+                        android:textColor="@color/starmeasure_turquoise"
+                        android:textSize="18sp" />
+
+                    <RadioButton
+                        android:id="@+id/rb_etapa2"
+                        android:layout_width="match_parent"
+                        android:layout_height="27dp"
+                        android:text="Último Nro"
+                        android:textColor="@color/starmeasure_turquoise"
+                        android:textSize="18sp" />
+                </RadioGroup>
+
+                <TextView
+                    android:id="@+id/tv_titulo_repeticoes"
+                    android:layout_width="90dp"
+                    android:layout_height="25dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="2dp"
+                    android:paddingStart="5dp"
+                    android:paddingTop="3dp"
+                    android:text="Repetição"
+                    android:textColor="@color/starmeasure_turquoise"
+                    android:textSize="18sp"
+                    app:layout_constraintStart_toEndOf="@+id/rg_config_ciclos"
+                    app:layout_constraintTop_toBottomOf="@+id/rg_etapa_ciclos" />
+
+                <EditText
+                    android:id="@+id/etRepeticoes"
+                    android:layout_width="50dp"
+                    android:layout_height="30dp"
+                    android:ems="10"
+                    android:enabled="true"
+                    android:inputType="number"
+                    android:padding="6dp"
+                    android:textSize="18sp"
+                    app:layout_constraintEnd_toEndOf="@+id/rg_etapa_ciclos"
+                    app:layout_constraintStart_toEndOf="@+id/tv_intervalo_etapa1"
+                    app:layout_constraintTop_toBottomOf="@+id/rg_etapa_ciclos" />
+
+                <TextView
+                    android:id="@+id/tv_intervalo_etapa1"
+                    android:layout_width="90dp"
+                    android:layout_height="25dp"
+                    android:layout_marginStart="5dp"
+                    android:layout_marginTop="4dp"
+                    android:paddingStart="5dp"
+                    android:paddingTop="3dp"
+                    android:text="Intervalo 1"
+                    android:textColor="@color/starmeasure_turquoise"
+                    android:textSize="18sp"
+                    app:layout_constraintStart_toEndOf="@+id/rg_config_ciclos"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_titulo_repeticoes" />
+
+                <EditText
+                    android:id="@+id/etIntervalo1"
+                    android:layout_width="50dp"
+                    android:layout_height="30dp"
+                    android:ems="10"
+                    android:enabled="true"
+                    android:inputType="number"
+                    android:padding="6dp"
+                    android:textSize="18sp"
+                    app:layout_constraintStart_toEndOf="@+id/tv_intervalo_etapa1"
+                    app:layout_constraintTop_toBottomOf="@+id/etRepeticoes" />
+
+                <TextView
+                    android:id="@+id/tv_titulo_intervalo2"
+                    android:layout_width="90dp"
+                    android:layout_height="25dp"
+                    android:layout_marginTop="5dp"
+                    android:paddingStart="5dp"
+                    android:paddingTop="3dp"
+                    android:text="Intervalo 2"
+                    android:textColor="@color/starmeasure_turquoise"
+                    android:textSize="18sp"
+                    app:layout_constraintStart_toStartOf="@+id/tv_intervalo_etapa1"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_intervalo_etapa1" />
+
+                <EditText
+                    android:id="@+id/etIntervalo2"
+                    android:layout_width="50dp"
+                    android:layout_height="30dp"
+                    android:ems="10"
+                    android:enabled="true"
+                    android:inputType="number"
+                    android:padding="6dp"
+                    android:textSize="18sp"
+                    app:layout_constraintStart_toEndOf="@+id/tv_titulo_intervalo2"
+                    app:layout_constraintTop_toBottomOf="@+id/etIntervalo1" />
+
+                <EditText
+                    android:id="@+id/etTelefone1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:layout_marginStart="10dp"
+                    android:ems="10"
+                    android:enabled="true"
+                    android:inputType="number"
+                    android:padding="6dp"
+                    android:textSize="18sp"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="@+id/cb_configuracaonic_telefone1_check"
+                    app:layout_constraintStart_toEndOf="@+id/cb_configuracaonic_telefone1_check"
+                    app:layout_constraintTop_toTopOf="@+id/cb_configuracaonic_telefone1_check" />
+
+                <EditText
+                    android:id="@+id/etTelefone2"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:layout_marginStart="10dp"
+                    android:ems="10"
+                    android:enabled="true"
+                    android:inputType="number"
+                    android:padding="6dp"
+                    android:textSize="18sp"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="@+id/cb_configuracaonic_telefone2_check"
+                    app:layout_constraintStart_toEndOf="@+id/cb_configuracaonic_telefone2_check"
+                    app:layout_constraintTop_toBottomOf="@+id/cb_configuracaonic_telefone1_check" />
+
+                <EditText
+                    android:id="@+id/etTelefone3"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:ems="10"
+                    android:enabled="true"
+                    android:inputType="number"
+                    android:padding="6dp"
+                    android:textSize="18sp"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="@+id/cb_configuracaonic_telefone3_check"
+                    app:layout_constraintStart_toStartOf="@+id/etTelefone2"
+                    app:layout_constraintTop_toBottomOf="@+id/cb_configuracaonic_telefone2_check" />
+
+                <EditText
+                    android:id="@+id/etTelefone4"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:ems="10"
+                    android:enabled="true"
+                    android:inputType="number"
+                    android:padding="6dp"
+                    android:textSize="18sp"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="@+id/cb_configuracaonic_telefone4_check"
+                    app:layout_constraintStart_toStartOf="@+id/etTelefone3"
+                    app:layout_constraintTop_toBottomOf="@+id/cb_configuracaonic_telefone3_check" />
+
+                <TextView
+                    android:id="@+id/tv_titulo_telefone_keep_alive"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="10dp"
+                    android:text="Keep Alive"
+                    android:textColor="@color/starmeasure_turquoise"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/rg_config_ciclos" />
+
+                <CheckBox
+                    android:id="@+id/cb_Telefone_Keep_Alive"
+                    android:layout_width="61dp"
+                    android:layout_height="35dp"
+                    android:layout_marginTop="8dp"
+                    android:clickable="true"
+                    android:enabled="true"
+                    android:text="Tel."
+                    android:textColor="@color/starmeasure_turquoise"
+                    android:textSize="18sp"
+                    android:visibility="visible"
+                    app:layout_constraintStart_toStartOf="@+id/tv_titulo_telefone_keep_alive"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_titulo_telefone_keep_alive" />
+
+                <EditText
+                    android:id="@+id/etTelefoneKeepAlive"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:layout_marginStart="10dp"
+                    android:ems="10"
+                    android:inputType="number"
+                    android:padding="6dp"
+                    android:textSize="18sp"
+                    app:layout_constraintBottom_toBottomOf="@+id/cb_Telefone_Keep_Alive"
+                    app:layout_constraintStart_toEndOf="@+id/cb_Telefone_Keep_Alive"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_titulo_telefone_keep_alive" />
+
+                <TextView
+                    android:id="@+id/tv_frequencia_keep_alive"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Freq.:"
+                    android:textColor="@color/starmeasure_turquoise"
+                    android:textSize="18sp"
+                    android:visibility="visible"
+                    app:layout_constraintEnd_toEndOf="@+id/cb_Telefone_Keep_Alive"
+                    app:layout_constraintTop_toBottomOf="@+id/cb_Telefone_Keep_Alive" />
+
+                <EditText
+                    android:id="@+id/etFrequenciaKeepAlive"
+                    android:layout_width="wrap_content"
+                    android:layout_height="35dp"
+                    android:layout_marginStart="10dp"
+                    android:ems="10"
+                    android:enabled="true"
+                    android:inputType="number"
+                    android:padding="6dp"
+                    android:textSize="18sp"
+                    android:visibility="visible"
+                    app:layout_constraintBottom_toBottomOf="@+id/tv_frequencia_keep_alive"
+                    app:layout_constraintStart_toEndOf="@+id/tv_frequencia_keep_alive"
+                    app:layout_constraintTop_toTopOf="@+id/tv_frequencia_keep_alive" />
+
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </ScrollView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

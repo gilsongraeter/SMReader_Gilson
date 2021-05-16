@@ -41,3 +41,7 @@
 
 ## Versão 43
 * Mostrar Módulo, Estado de conexão e Sinal da placa de comunicação igual ao que era mostrado no ET.
+
+## Versão 44
+* Autoconexão do Bluetooth com indicação do tipo de módulo BLE no transport.
+* Criada tela de configuração da NIC para modelo de medidor EasyVolt

@@ -125,8 +125,8 @@ public class DeviceActivity extends AppCompatActivity
     byte iEventos = 0;
     byte iCiclos = 0;
     byte iRepeticoes = 0;
-    short iIntervalo1 = 0;
-    short iIntervalo2 = 0;
+    int iIntervalo1 = 0;
+    int iIntervalo2 = 0;
     byte iValidade = 0;
     byte iFrequenciaKeepAlive = 0;
 
@@ -249,7 +249,7 @@ public class DeviceActivity extends AppCompatActivity
         LinearLayoutManager llm = new LinearLayoutManager(this);
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         mRecyclerView.setLayoutManager(llm);
-        if (mDeviceName.startsWith("ET01")||(mDeviceName.startsWith("ET1"))) {
+        if (mDeviceName.startsWith("ET01")||mDeviceName.startsWith("ET1")||mDeviceName.startsWith("ET2")) {
             tipo_medidor = TipoMedidor.EASY_TRAFO;
         } else if (mDeviceName.startsWith("ET3")) {
                 tipo_medidor = TipoMedidor.EASY_VOLT;
@@ -356,7 +356,9 @@ public class DeviceActivity extends AppCompatActivity
             }
 
             // Automatically connects to the device upon successful start-up initialization.
-            mBluetoothLeService.connect(mDeviceAddress);
+            if((mBluetoothLeService != null)&&(mDeviceAddress != null)){
+                mBluetoothLeService.connect(mDeviceAddress);
+            }
         }
 
         @Override
@@ -1625,11 +1627,11 @@ public class DeviceActivity extends AppCompatActivity
             byte QtdTelefonesAux= 0;
             byte EventosAux = 0;
             byte RepeticoesAux = 0;
-            byte Intervalo1Aux = 0;
-            byte Intervalo2Aux = 0;
+            int Intervalo1Aux = 0;
+            int Intervalo2Aux = 0;
             byte Repeticoes = 0;
-            byte Intervalo1 = 0;
-            byte Intervalo2 = 0;
+            int Intervalo1 = 0;
+            int Intervalo2 = 0;
             byte FrequenciaKeepAliveAux = 0;
             byte TamCampo = 0;
 
@@ -1868,7 +1870,7 @@ public class DeviceActivity extends AppCompatActivity
             if(!etIntervalo1Aux.isEmpty())
             {
                 try {
-                    byte d = Byte.parseByte(etIntervalo1Aux);
+                    int d = Integer.parseInt(etIntervalo1Aux);
 
                     if(iIntervalo1 != d)
                     {
@@ -1888,14 +1890,14 @@ public class DeviceActivity extends AppCompatActivity
             {
                 // Intervalo1 nao foi digitado
                 mEB17.setAlteracaoIntervalo1(false);
-                mEB17.setIntervalo1((byte)0x00);
+                mEB17.setIntervalo1((int)0x00);
             }
 
             etIntervalo2Aux = etIntervalo2.getText().toString();
             if(!etIntervalo2Aux.isEmpty())
             {
                 try {
-                    byte d = Byte.parseByte(etIntervalo2Aux);
+                    int d = Integer.parseInt(etIntervalo2Aux);
 
                     if(iIntervalo2 != d)
                     {
@@ -1915,7 +1917,7 @@ public class DeviceActivity extends AppCompatActivity
             {
                 // Intervalo2 nao foi digitado
                 mEB17.setAlteracaoIntervalo2(false);
-                mEB17.setIntervalo2((byte)0x00);
+                mEB17.setIntervalo2((int)0x00);
             }
 
             if(cbTelefoneKeepAlive.isChecked())

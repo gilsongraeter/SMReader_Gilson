@@ -450,9 +450,9 @@ public class ComandoAbsoluto {
         private boolean isAlteracaoRepeticoes = false;
         private byte RepeticoesEtapa1 = 0;
         private boolean isAlteracaoIntervalo1 = false;
-        private short Intervalo1 = 0;
+        private int Intervalo1 = 0;
         private boolean isAlteracaoIntervalo2 = false;
-        private short Intervalo2 = 0;
+        private int Intervalo2 = 0;
         private boolean isAlteracaoTelefoneKeepAlive = false;
         private String TelefoneKeepAlive = "00000000000";
         private boolean isAlteracaoFrequenciaKeepAlive = false;
@@ -650,19 +650,19 @@ public class ComandoAbsoluto {
             this.RepeticoesEtapa1 = Repeticoes;
         }
 
-        public short getIntervalo1() {
+        public int getIntervalo1() {
             return Intervalo1;
         }
 
-        public void setIntervalo1(byte Intervalo) {
+        public void setIntervalo1(int Intervalo) {
             this.Intervalo1 = Intervalo;
         }
 
-        public short getIntervalo2() {
+        public int getIntervalo2() {
             return Intervalo2;
         }
 
-        public void setIntervalo2(byte Intervalo) {
+        public void setIntervalo2(int Intervalo) {
             this.Intervalo2 = Intervalo;
         }
 

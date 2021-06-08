@@ -91,6 +91,7 @@ public class SelecaoPasta {
                     @Override
                     public void onPermissionsDenied(int requestCode) {
                         //...
+                        Toast.makeText(context, "Permissão negada.", Toast.LENGTH_LONG).show();
                     }
                 });
     }

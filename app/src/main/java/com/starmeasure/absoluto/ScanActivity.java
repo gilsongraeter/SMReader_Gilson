@@ -76,7 +76,7 @@ public class ScanActivity extends AppCompatActivity {
     private BluetoothAdapter mBluetoothAdapter;
     private RecyclerView mRecyclerView;
     private ImageView mRefreshImage;
-    private ImageView mFolderCOnfig;
+    private ImageView mFolderConfig;
 
     private Timer timer;
     private TimerTask timerTask;
@@ -140,8 +140,8 @@ public class ScanActivity extends AppCompatActivity {
             }
         });
 
-        mFolderCOnfig = findViewById(R.id.config);
-        mFolderCOnfig.setOnClickListener(v -> {
+        mFolderConfig = findViewById(R.id.config);
+        mFolderConfig.setOnClickListener(v -> {
             PopupMenu menu = new PopupMenu(ScanActivity.this, v);
             menu.inflate(R.menu.menu_file_manager);
             menu.setOnMenuItemClickListener(item -> {

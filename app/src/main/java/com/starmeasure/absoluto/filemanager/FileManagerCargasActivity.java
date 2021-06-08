@@ -1,5 +1,7 @@
 package com.starmeasure.absoluto.filemanager;
 
+import android.Manifest;
+import android.app.Activity;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -253,6 +256,9 @@ public class FileManagerCargasActivity extends AppCompatActivity implements View
                                                     Log.i(classTag, "É zip");
                                                     if (Arquivo.isValidZip(localFile)) {
                                                         Log.i(classTag, "Zip valido");
+                                                        ActivityCompat.requestPermissions(this,
+                                                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                                                                1);
                                                         Arquivo.unzip(localFile, new File(Arquivo.pathCargas()));
                                                     } else {
                                                         Log.i(classTag, "Zip invalido");

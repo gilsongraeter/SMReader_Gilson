@@ -329,10 +329,9 @@ public class RespostaAbsoluto {
         leitura.Eventos = mData[32];
         leitura.Ciclos = mData[33];
         leitura.RepeticoesEtapa1 = mData[34];
-        leitura.Intervalo1 = (short)(mData[36] << 8);
-        leitura.Intervalo1 |= (short)(mData[35]);
-        leitura.Intervalo2 = (short)(mData[38] << 8);
-        leitura.Intervalo2 |= (short)(mData[37]);
+
+        leitura.Intervalo1 = BufferTo16(mData, 35);
+        leitura.Intervalo2 = BufferTo16(mData, 37);
 
         leitura.TelefoneKeepAlive = String.format("%02X", mData[39]);
         leitura.TelefoneKeepAlive += String.format("%02X", mData[40]);
@@ -346,6 +345,21 @@ public class RespostaAbsoluto {
         leitura.FrequenciaKeepAlive = mData[46];
 
         return leitura;
+    }
+
+    public static final int BufferTo8(byte[] b, int i)
+    {
+        int i8 = b[i] & 0xFF;
+        return i8;
+    }
+
+    public static final int BufferTo16(byte[] b, int i)
+    {
+        int i16 = 0;
+        i16 |= b[i+1] & 0xFF;
+        i16 <<= 8;
+        i16 |= b[i] & 0xFF;
+        return i16;
     }
 
     public LeituraEB90 interpretaEB90() {
@@ -801,8 +815,8 @@ public class RespostaAbsoluto {
         public byte Eventos;
         public byte Ciclos;
         public byte RepeticoesEtapa1;
-        public short Intervalo1;
-        public short Intervalo2;
+        public int Intervalo1;
+        public int Intervalo2;
         public String TelefoneKeepAlive;
         public byte Validade;
         public byte FrequenciaKeepAlive;

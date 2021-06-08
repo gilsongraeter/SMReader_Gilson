@@ -91,7 +91,9 @@ public class Arquivo {
     }
 
     public static boolean checkWriteExternalStoragePermission(final Context context) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+        int PermissaoEscrita = ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+        if (PermissaoEscrita != PackageManager.PERMISSION_GRANTED) {
             if (ActivityCompat.shouldShowRequestPermissionRationale((Activity) context, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 new AlertDialog.Builder(context, android.R.style.Theme_Material_Dialog_Alert)
                         .setTitle("Permissão de escrita")

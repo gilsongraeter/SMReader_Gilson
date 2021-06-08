@@ -33,6 +33,8 @@ import android.os.Build;
 import android.os.IBinder;
 import android.util.Log;
 
+import androidx.annotation.RequiresApi;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -85,16 +87,15 @@ public class BluetoothLeService extends Service {
                 // Attempts to discover services after successful connection.
                 setConnectionPriority();
                 Log.i(TAG, "DISCOVERY SERVICES: " + mBluetoothGatt.discoverServices());
+
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
                 intentAction = ACTION_GATT_DISCONNECTED;
                 mConnectionState = STATE_DISCONNECTED;
                 Log.i(TAG, "+++++ DESCONECTADO GATT SERVER.");
-                mBluetoothGatt.disconnect();//ancelConnection()
-                try {
-                    Thread.sleep(300);
-                } catch (InterruptedException e) {
-                    //e.printStackTrace();
-                }
+                mBluetoothGatt.disconnect();//cancelConnection()
+                mBluetoothGatt.close();
+                //mBluetoothGatt = null;
+
                 broadcastUpdate(intentAction);
             }
         }
@@ -269,6 +270,7 @@ public class BluetoothLeService extends Service {
      * {@code BluetoothGattCallback#onConnectionStateChange(android.bluetooth.BluetoothGatt, int, int)}
      * callback.
      */
+    @RequiresApi(api = Build.VERSION_CODES.M)
     public boolean connect(final String address) {
         if (mBluetoothAdapter == null || address == null) {
             Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
@@ -276,7 +278,7 @@ public class BluetoothLeService extends Service {
         }
 
         // Previously connected device.  Try to reconnect.
-        if ((address.equals(mBluetoothDeviceAddress) && (mConnectionState != STATE_DISCONNECTED) && mBluetoothGatt != null)) {
+        if (address.equals(mBluetoothDeviceAddress) && (mConnectionState != STATE_DISCONNECTED) && mBluetoothGatt != null) {
             Log.d(TAG, "Trying to use an existing mBluetoothGatt for connection.");
             setConnectionPriority();
             if (mBluetoothGatt.connect()) {
@@ -295,7 +297,7 @@ public class BluetoothLeService extends Service {
         }
         // We want to directly connect to the device, so we are setting the autoConnect
         // parameter to false.
-        mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
+        mBluetoothGatt = device.connectGatt(this, true, mGattCallback, 2);
         setConnectionPriority();
         Log.d(TAG, "RECONECTADO GATT.");
         mBluetoothDeviceAddress = address;
@@ -303,7 +305,6 @@ public class BluetoothLeService extends Service {
 
         mConnectionState = STATE_CONNECTING;
         return true;
-
     }
 
     /**
@@ -330,10 +331,12 @@ public class BluetoothLeService extends Service {
      * released properly.
      */
     public void close() {
-        if (mBluetoothGatt == null) {
+        if (mBluetoothAdapter == null || mBluetoothGatt == null)
+        {
             return;
         }
         mBluetoothGatt.disconnect();
+
         mBluetoothGatt.close();
         mBluetoothGatt = null;
     }
@@ -398,20 +401,30 @@ public class BluetoothLeService extends Service {
     }
 
     private void setConnectionPriority() {
-        if (mBluetoothGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH)) {
+        if (mBluetoothGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH))
+        {
             Log.d(TAG, "PRIORITY SET AS HIGH");
-        } else {
-            Log.e(TAG, "CAN'T SET PRIORITY AS HIGH");
-            if (mBluetoothGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_BALANCED)) {
-                Log.d(TAG, "PRIORITY SET AS BALANCED");
-            } else {
-                Log.e(TAG, "CAN'T SET PRIORITY AS BALANCE");
-                if (mBluetoothGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER)) {
-                    Log.d(TAG, "PRIORITY SET AS LOW");
-                } else {
-                    Log.e(TAG, "CAN'T SET PRIORITY AS LOW");
+        }
+        else
+        {
+                Log.e(TAG, "CAN'T SET PRIORITY AS HIGH");
+
+                if (mBluetoothGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_BALANCED))
+                {
+                    Log.d(TAG, "PRIORITY SET AS BALANCED");
                 }
-            }
+                else
+                {
+                    Log.e(TAG, "CAN'T SET PRIORITY AS BALANCE");
+                    if (mBluetoothGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_LOW_POWER))
+                    {
+                        Log.d(TAG, "PRIORITY SET AS LOW");
+                    }
+                    else
+                    {
+                        Log.e(TAG, "CAN'T SET PRIORITY AS LOW");
+                    }
+                }
         }
     }
 

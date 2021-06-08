@@ -6,10 +6,10 @@ android {
     defaultConfig {
         applicationId "com.starmeasure.smreader"
         vectorDrawables.useSupportLibrary = true
-        minSdkVersion 21
-        targetSdkVersion 28
-        versionCode 44
-        versionName "44"
+        minSdkVersion 23
+        targetSdkVersion 29
+        versionCode 46
+        versionName '46'
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

@@ -102,6 +102,8 @@ public class DeviceActivity extends AppCompatActivity
     private boolean rodandoCarga = false;
     private boolean rodandoEB90 = false;
     private boolean rodandoEB17 = false;
+    private boolean brespostaEB17 = false;
+    private boolean bAlterandoConfigRemota = false;
     private Carga mCarga;
     private ComandoAbsoluto.CargaDePrograma mCargaDePrograma;
     private int contaTentativasContador = 0;
@@ -402,6 +404,10 @@ public class DeviceActivity extends AppCompatActivity
                     processData();
                     mByteCount = 0;
                     mBytesReceived.reset();
+                    //if((bAlterandoConfigRemota)&&(!brespostaEB17))
+                    //{
+                    //    enviaComandoEB17((byte) 0);
+                    //}
                 }
             }
         }
@@ -875,6 +881,7 @@ public class DeviceActivity extends AppCompatActivity
     }
 
     private void processData() {
+
         final byte[] data = mBytesReceived.toByteArray();
         RespostaAbsoluto respostaAbsoluto = new RespostaAbsoluto(data);
         if (respostaAbsoluto.isOcorrencia()) {
@@ -950,7 +957,7 @@ public class DeviceActivity extends AppCompatActivity
             processarCargaDePrograma(respostaAbsoluto);
         } else if (respostaAbsoluto.isEB17()) {
             if (funcaoEmExecucao == TipoOperacao.ConfiguracaoNIC) {
-                processaEB17(respostaAbsoluto);
+                brespostaEB17 = processaEB17(respostaAbsoluto);
             }
         } else if (respostaAbsoluto.isEB90()) {
             processaEB90(respostaAbsoluto);
@@ -980,7 +987,7 @@ public class DeviceActivity extends AppCompatActivity
         dialogMonitoramento.findViewById(R.id.monitoramento_enviar_alteracao).setEnabled(false);
     }
 
-    private void processaEB17(RespostaAbsoluto respostaAbsoluto) {
+    private Boolean processaEB17(RespostaAbsoluto respostaAbsoluto) {
         ComandoAbsoluto.EB17 mEB17 = new ComandoAbsoluto.EB17();
 
         RespostaAbsoluto.LeituraEB17 mLeitura = respostaAbsoluto.interpretaEB17();
@@ -995,15 +1002,28 @@ public class DeviceActivity extends AppCompatActivity
         dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_loading).setVisibility(View.INVISIBLE);
         dialogConfiguracaoNIC.findViewById(R.id.configuracaonic_enviar_alteracao).setEnabled(true);
 
-        Toast.makeText(this, "Dados recebidos...", Toast.LENGTH_SHORT).show();
+        if(mLeitura.isLeitura){
+            Toast.makeText(this, "Dados recebidos da leitura...", Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            Toast.makeText(this, "Dados recebidos do comando de alteração...", Toast.LENGTH_SHORT).show();
+        }
 
-        atualizaDialogConfiguracaoNIC(mLeitura);
+        //if((mLeitura.ValeAlteracao == 0)||(!bAlterandoConfigRemota)){
+        //    if(bAlterandoConfigRemota){
+        //        bAlterandoConfigRemota = false;
+        //    }
+            atualizaDialogConfiguracaoNIC(mLeitura);
 
-        dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone1_check).setEnabled(true);
-        dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone2_check).setEnabled(true);
-        dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone3_check).setEnabled(true);
-        dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone4_check).setEnabled(true);
-        dialogConfiguracaoNIC.findViewById(R.id.cb_Telefone_Keep_Alive).setEnabled(true);
+            dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone1_check).setEnabled(true);
+            dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone2_check).setEnabled(true);
+            dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone3_check).setEnabled(true);
+            dialogConfiguracaoNIC.findViewById(R.id.cb_configuracaonic_telefone4_check).setEnabled(true);
+            dialogConfiguracaoNIC.findViewById(R.id.cb_Telefone_Keep_Alive).setEnabled(true);
+            return true;
+        //}
+        //return false;
     }
 
     private void processaEB90(RespostaAbsoluto respostaAbsoluto) {
@@ -1989,6 +2009,7 @@ public class DeviceActivity extends AppCompatActivity
                 }
             }
             enviaEB17();
+            //bAlterandoConfigRemota = true;
 
             Toast.makeText(this, "Enviando alteração de configuração de NIC", Toast.LENGTH_SHORT).show();
 
